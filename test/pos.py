@@ -18,13 +18,13 @@ from satcfe.entidades import CFeCancelamento
 from satcfe.excecoes import ErroRespostaSATInvalida
 from satcfe.excecoes import ExcecaoRespostaSAT
 
-#cliente = ClienteSATLocal(
-#     BibliotecaSAT('/usr/lib/libbemasat.so'),
-#     codigo_ativacao='bema1234'
-#    )
-#print cliente
-#resposta = cliente.consultar_sat()
-#print resposta.mensagem
+cliente = ClienteSATLocal(
+    BibliotecaSAT('/usr/lib/libbemasat.so'),
+    codigo_ativacao='bema1234'
+   )
+print cliente
+resposta = cliente.consultar_sat()
+print resposta.mensagem
 
 
 from escpos.serial import SerialSettings
