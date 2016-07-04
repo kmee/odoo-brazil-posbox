@@ -31,8 +31,7 @@ from escpos.serial import SerialSettings
 from escpos.impl.epson import TMT20
 from satextrato import ExtratoCFeVenda
 
-conn = SerialSettings.as_from('/dev/ttyS33:9600:8:2:O:DSRDTR').get_connection()
-#conn = SerialSettings.as_from('/dev/ttyS33:115200,8,1,N:DSRDTR').get_connection()
+conn = SerialSettings.as_from('/dev/ttyS0:115200,8,1,N').get_connection()
 impressora = TMT20(conn)
 impressora.init()
 
