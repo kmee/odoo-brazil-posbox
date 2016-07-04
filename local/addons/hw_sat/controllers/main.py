@@ -53,8 +53,8 @@ class Sat(Thread):
         self.lock = Lock()
         self.satlock = Lock()
         self.status = {'status': 'connecting', 'messages': []}
-        # self.printer = self._init_printer()
-        self.printer = False
+        self.printer = self._init_printer()
+        # self.printer = False
         self.device = self._get_device()
 
     def lockedstart(self):
@@ -119,7 +119,7 @@ class Sat(Thread):
     def __prepare_send_detail_cfe(self, item):
         return Detalhamento(
             produto=ProdutoServico(
-                cProd=unicode(int),
+                cProd=item['product_default_code'],
                 xProd=item['product_name'],
                 CFOP='5102',
                 uCom=item['unit_name'],
