@@ -35,6 +35,6 @@ conn = SerialSettings.as_from('/dev/ttyS0:115200,8,1,N').get_connection()
 impressora = TMT20(conn)
 impressora.init()
 
-with open(r'/home/ananias/posbox/test/pos_order_1.xml', 'r') as fp:
+with open(r'test/pos_order_1.xml', 'r') as fp:
     extrato = ExtratoCFeVenda(fp, impressora)
     extrato.imprimir()
