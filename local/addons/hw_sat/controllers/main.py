@@ -40,6 +40,7 @@ except ImportError:
     _logger.error('Odoo module hw_l10n_br_pos depends on the satcfe module')
     satcfe = None
 
+assinatura = "Z1e6EpWkwg9b1DxWGMz9VM2vBRhdH1lPH4hRr41p4dtfaXaVMDJXJgOPUtNoZ1dNR2NuQOBwYvlwASz/nrps9n19thmR03fXQm1coWHTloUCWPswjE6rawkejvGjN3+Jxzs0OdD0TQOr5ig5KL5Bg5qdC5orxY8XlalTKDcrqN4VkTXIh3dARJYNJBg1Z2LVQBoXrsXJRSzly5Dba90xFZq8vJRm3sNLFCoDQNyoxkkvikJvOCbvJ/gZ3JiBYBzf25zHJyPVALI32JLgMHB8qX3HrHIpWS/48CpwOrfzq1Ea7QojWmu1ntz1HTAkEWLmWrHcUSHn9eGNIwUVqxO68Q=="
 
 TWOPLACES = Decimal(10) ** -2
 FOURPLACES = Decimal(10) ** -4
@@ -51,7 +52,7 @@ def punctuation_rm(string_value):
     return tmp_value
 
 class Sat(Thread):
-    def __init__(self, codigo_ativacao, sat_path, impressora, printer_params):
+    def __init__(self, codigo_ativacao, sat_path, impressora, printer_params, assinatura):
         Thread.__init__(self)
         self.codigo_ativacao = codigo_ativacao
         self.sat_path = sat_path
@@ -62,6 +63,7 @@ class Sat(Thread):
         self.status = {'status': 'connecting', 'messages': []}
         self.printer = self._init_printer()
         self.device = self._get_device()
+        self.assinatura = assinatura
 
     def lockedstart(self):
         with self.lock:
@@ -148,20 +150,21 @@ class Sat(Thread):
                 pis=PISSN(CST='49'),
                 cofins=COFINSSN(CST='49'))
         )
-
+        detalhe.validar()
         return detalhe, estimated_taxes
 
     def __prepare_payment(self, json):
         kwargs = {}
         if json['sat_card_accrediting']:
             kwargs['cAdmC'] = json['sat_card_accrediting']
-
-        return MeioPagamento(
+        pagamento = MeioPagamento(
             cMP=json['sat_payment_mode'],
             vMP=Decimal(json['amount']).quantize(
                 TWOPLACES),
             **kwargs
         )
+        pagamento.validar()
+        return pagamento
 
 
     def __prepare_send_cfe(self, json):
@@ -184,15 +187,18 @@ class Sat(Thread):
         if json['client']:
             # TODO: Verificar se tamanho == 14: cnpj
             kwargs['destinatario'] = Destinatario(CPF=json['client'])
+        emitente = Emitente(
+                CNPJ=punctuation_rm(json['company']['cnpj']),
+                IE=punctuation_rm(json['company']['ie']),
+                indRatISSQN='N')
+        emitente.validar()
+
 
         return CFeVenda(
             CNPJ=json['company']['cnpj_software_house'],
-            signAC=constantes.ASSINATURA_AC_TESTE,
+            signAC=self.assinatura,
             numeroCaixa=2,
-            emitente=Emitente(
-                CNPJ=json['company']['cnpj'],
-                IE=json['company']['ie'],
-                indRatISSQN='N'),
+            emitente=emitente,
             detalhamentos=detalhamentos,
             pagamentos=pagamentos,
             vCFeLei12741=total_taxes,
@@ -209,18 +215,19 @@ class Sat(Thread):
             'chave_cfe': resposta.chaveConsulta,
         }
 
-    def __prepare_cancel_cfe(self, chCanc):
+    def __prepare_cancel_cfe(self, chCanc, cnpj):
         return CFeCancelamento(
             chCanc=chCanc,
-            CNPJ='16716114000172',
-            signAC=constantes.ASSINATURA_AC_TESTE,
+            CNPJ=cnpj,
+            signAC=self.assinatura,
             numeroCaixa=2
         )
 
     def _cancel_cfe(self, order):
         resposta = self.device.cancelar_ultima_venda(
             order['chaveConsulta'],
-            self.__prepare_cancel_cfe(order['chaveConsulta'])
+            self.__prepare_cancel_cfe(order['chaveConsulta'],
+                                      order['company']['cnpj_software_house'])
         )
         self._print_extrato_cancelamento(
             order['xml_cfe_venda'], resposta.arquivoCFeBase64)
