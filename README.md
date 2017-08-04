@@ -59,14 +59,14 @@ Por fim, execute o buildout:
 
 Dica|
 ----|
-Para fins de teste, há uma pasta chamada test que contem um script para testar a comunicação com o SAT e a Impressora não fiscal. Para realizar o teste, edit o arquivo test/pos.py e modifique as opções:
+Para fins de teste, há uma pasta chamada test que contem um script para testar a comunicação com o SAT e a Impressora não fiscal. Para realizar o teste, edit o arquivo test/pos.py e modifique as opções: |
 
 	from escpos.impl.epson import TMT20
 
 Para
 
 	from escpos.impl.bematech import MP4200TH
-|
+
 
 
 Após o término da execução do buildout, inicie o odoo
