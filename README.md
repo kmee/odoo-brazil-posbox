@@ -48,9 +48,9 @@ Edite o arquivo buildout.cfg e altere as opções abaixo:
 
 Para:
 
-  *options.xmlrpc_port = 8079
+  *options.xmlrpc_port = 8079*
 
-  *options.longpolling_port = 8082
+  *options.longpolling_port = 8082*
 
 
 Por fim, execute o buildout:
