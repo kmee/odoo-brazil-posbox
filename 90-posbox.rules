@@ -1,0 +1,5 @@
+# /etc/udev/rules.d/90-posbox.rules
+#Printer Bematech MP-4200 TH
+ACTION=="add", SUBSYSTEM=="tty", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0003", SYMLINK+="printer_MP4200TH"
+ACTION=="remove",  SUBSYSTEM=="tty", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0003", SYMLINK+="printer_MP4200TH"
+
