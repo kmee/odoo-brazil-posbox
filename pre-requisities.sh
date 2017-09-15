@@ -4,7 +4,7 @@ sudo apt-get update
 sudo apt-get install -y python-virtualenv expect-dev python-lxml \
   libxml2-dev libxslt-dev gcc python2.7-dev libevent-dev libsasl2-dev \
   libldap2-dev libpq-dev libpng12-dev libjpeg-dev sudo supervisor git \
-  curl wget
+  curl wget postgresql
 
 ODOO_USER=odoo
 ODOO_DIR=/opt/odoo
