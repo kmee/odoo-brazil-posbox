@@ -7,8 +7,6 @@ sudo apt-get install -y python-virtualenv expect-dev python-lxml \
 
 ODOO_USER=odoo
 ODOO_DIR=/opt/odoo
-REPO_BRANCH=udev-rules
-
 CHECK_ODOO_USER=$(getent passwd $ODOO_USER|wc -l)
 clear
 echo $CHECK_ODOO_USER
@@ -22,7 +20,7 @@ if [ ! -d "$ODOO_DIR" ]; then
         sudo chown $ODOO_USER:$ODOO_USER $ODOO_DIR
 fi
 clear
-sudo -H -u odoo bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b $REPO_BRANCH && cd /opt/odoo/odoo-brazil-posbox && bash init-buildout.sh'
+sudo -H -u odoo bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b udev-rules && cd /opt/odoo/odoo-brazil-posbox && bash init-buildout.sh'
 cp $ODOO_DIR/odoo-brazil-posbox/90-posbox.rules /etc/udev/rules.d/
 cp $ODOO_DIR/odoo-brazil-posbox/odoo-supervisor.conf /etc/supervisor/conf.d/odoo.conf
 
