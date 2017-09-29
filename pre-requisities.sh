@@ -30,6 +30,8 @@ sudo -H -u odoo bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-
 cp $ODOO_DIR/odoo-brazil-posbox/90-posbox.rules /etc/udev/rules.d/
 cp $ODOO_DIR/odoo-brazil-posbox/odoo-supervisor.conf /etc/supervisor/conf.d/odoo.conf
 
+sudo usermod -a -G dialout odoo
+
 supervisorctl reread
 supervisorctl update
 
