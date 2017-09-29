@@ -5,22 +5,22 @@
 #/etc/udev/rules.d/
 
 # MP-2100 TH FI
-KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="2843", ATTRS{idProduct}=="0000", SYMLINK+="usbbema_mp2100thfi", OWNER="lp", GROUP="plugdev", MODE="0666"
+KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="2843", ATTRS{idProduct}=="0000", SYMLINK+="usbbema_mp2100thfi", OWNER="lp", GROUP="dialout", MODE="0666"
 
 # MP-3000 TH FI
-KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0102", SYMLINK+="usbbema_mp3000thfi", OWNER="lp", GROUP="plugdev", MODE="0666"
+KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0102", SYMLINK+="usbbema_mp3000thfi", OWNER="lp", GROUP="dialout", MODE="0666"
 
 # MP-4000 TH FI
-KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0103", SYMLINK+="usbbema_mp4000thfi", OWNER="lp", GROUP="plugdev", MODE="0666"
+KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0103", SYMLINK+="usbbema_mp4000thfi", OWNER="lp", GROUP="dialout", MODE="0666"
 
 # MP-7000 TH FI
-KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0104", SYMLINK+="usbbema_mp7000thfi", OWNER="lp", GROUP="plugdev", MODE="0666"
+KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0104", SYMLINK+="usbbema_mp7000thfi", OWNER="lp", GROUP="dialout", MODE="0666"
 
 # MP-4200 TH FI
-KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0105", SYMLINK+="usbbema_mp4200thfi", OWNER="lp", GROUP="plugdev", MODE="0666"
+KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0105", SYMLINK+="usbbema_mp4200thfi", OWNER="lp", GROUP="dialout", MODE="0666"
 
 # MP-4200 TH FI II
-KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0106", SYMLINK+="usbbema_mp4200thfiii", OWNER="lp", GROUP="plugdev", MODE="0666"
+KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0106", SYMLINK+="usbbema_mp4200thfiii", OWNER="lp", GROUP="dialout", MODE="0666"
 
 # MP-4200TH
-SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0003", SYMLINK+="ttyS42", OWNER="lp", GROUP="plugdev", MODE="0666"
+SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0003", SYMLINK+="ttyS42", OWNER="lp", GROUP="dialout", MODE="0666"
