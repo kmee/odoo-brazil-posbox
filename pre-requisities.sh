@@ -15,13 +15,12 @@ sudo apt-get install -y python-virtualenv expect-dev python-lxml \
 
 ODOO_USER=odoo
 ODOO_DIR=/opt/odoo
-CHECK_ODOO_USER=$(getent passwd $ODOO_USER|wc -l)
-clear
-echo $CHECK_ODOO_USER
-if [ $CHECK_ODOO_USER -gt 0 ] ; then
-        echo "Usuario existe"
+
+if id -u $ODOO_USER &> /dev/null; then
+        echo "Usuario existe:" $ODOO_USER
 else
-        sudo adduser --system --shell=/bin/bash --home=/opt/$ODOO_USER --group $ODOO_USER
+        sudo adduser --system --shell=/bin/bash --home=$ODOO_DIR --group $ODOO_USER
+        sudo adduser odoo dialout
 fi
 if [ ! -d "$ODOO_DIR" ]; then
         sudo mkdir -p $ODOO_DIR
@@ -31,8 +30,6 @@ clear
 sudo -H -u odoo bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b udev-rules && cd /opt/odoo/odoo-brazil-posbox && bash init-buildout.sh && sed -i 's/unidecode==0.4.19/unidecode==0.4.18/g' src/satextrato/requirements.txt'
 sudo cp $ODOO_DIR/odoo-brazil-posbox/90-posbox.rules /etc/udev/rules.d/
 sudo cp $ODOO_DIR/odoo-brazil-posbox/odoo-supervisor.conf /etc/supervisor/conf.d/odoo.conf
-
-sudo usermod -a -G dialout odoo
 
 sudo supervisorctl reread
 sudo supervisorctl update
