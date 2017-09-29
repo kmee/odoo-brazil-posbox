@@ -28,13 +28,13 @@ if [ ! -d "$ODOO_DIR" ]; then
         sudo chown $ODOO_USER:$ODOO_USER $ODOO_DIR
 fi
 clear
-sudo -H -u odoo bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b udev-rules && cd /opt/odoo/odoo-brazil-posbox && bash init-buildout.sh'
-cp $ODOO_DIR/odoo-brazil-posbox/90-posbox.rules /etc/udev/rules.d/
-cp $ODOO_DIR/odoo-brazil-posbox/odoo-supervisor.conf /etc/supervisor/conf.d/odoo.conf
+sudo -H -u odoo bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b udev-rules && cd /opt/odoo/odoo-brazil-posbox && bash init-buildout.sh && sed -i 's/unidecode==0.4.19/unidecode==0.4.18/g' src/satextrato/requirements.txt'
+sudo cp $ODOO_DIR/odoo-brazil-posbox/90-posbox.rules /etc/udev/rules.d/
+sudo cp $ODOO_DIR/odoo-brazil-posbox/odoo-supervisor.conf /etc/supervisor/conf.d/odoo.conf
 
 sudo usermod -a -G dialout odoo
 
-supervisorctl reread
-supervisorctl update
+sudo supervisorctl reread
+sudo supervisorctl update
 
-supervisorctl restart odoo
+sudo supervisorctl restart odoo
