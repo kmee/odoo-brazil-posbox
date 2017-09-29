@@ -1,4 +1,9 @@
 #!/bin/bash
+REPO_UNIVERSE=$(grep universe /etc/apt/sources.list|wc -l)
+if [ $REPO_UNIVERSE -eq 0 ] ; then
+	sudo -H -u root bash -c 'echo "deb http://archive.ubuntu.com/ubuntu/ xenial universe" >> /etc/apt/souces.list'
+fi
+
 sudo apt-get update
 
 sudo apt-get install -y python-virtualenv expect-dev python-lxml \
