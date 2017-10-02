@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e -x
 sudo locale-gen pt_BR.UTF-8
 
 REPO_UNIVERSE=$(grep universe /etc/apt/sources.list|wc -l)
