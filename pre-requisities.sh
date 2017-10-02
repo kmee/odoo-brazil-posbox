@@ -2,10 +2,9 @@
 set -e -x
 sudo locale-gen pt_BR.UTF-8
 
-REPO_UNIVERSE=$(grep universe /etc/apt/sources.list|wc -l)
-if [ $REPO_UNIVERSE -eq 0 ] ; then
-	sudo -H -u root bash -c 'echo "deb http://archive.ubuntu.com/ubuntu/ xenial universe" >> /etc/apt/souces.list'
-fi
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
 
 sudo apt-get update
 
