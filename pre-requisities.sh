@@ -21,6 +21,8 @@ if id -u $ODOO_USER &> /dev/null; then
 else
         sudo adduser --system --shell=/bin/bash --home=$ODOO_DIR --group $ODOO_USER
         sudo adduser odoo dialout
+        sudo -u postgres createuser --createdb --no-createrole --superuser $ODOO_USER
+        sudo -u postgres createdb $ODOO_USER
 fi
 if [ ! -d "$ODOO_DIR" ]; then
         sudo mkdir -p $ODOO_DIR
