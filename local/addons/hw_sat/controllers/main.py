@@ -46,8 +46,7 @@ FOURPLACES = Decimal(10) ** -4
 
 
 def punctuation_rm(string_value):
-    tmp_value = (
-        re.sub('[%s]' % re.escape(string.punctuation), '', string_value or ''))
+    tmp_value = string_value.translate(None, string.punctuation)
     return tmp_value
 
 
