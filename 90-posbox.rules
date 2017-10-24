@@ -2,7 +2,14 @@
 #Printer Bematech MP-4200 TH
 ACTION=="add", SUBSYSTEM=="tty", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0003", SYMLINK+="printer_MP4200TH"
 ACTION=="remove",  SUBSYSTEM=="tty", ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0003", SYMLINK+="printer_MP4200TH"
-#/etc/udev/rules.d/
+
+# Make NetworkManager/ModemManager not probe these devices as modems:
+# Printer Bematech MP-4200 TH
+ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0003", ENV{ID_MM_DEVICE_IGNORE}="1"
+# SAT Bematech RB-1000 FI
+ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0108", ENV{ID_MM_DEVICE_IGNORE}="1"
+# SAT Bematech RB-2000 FI
+ATTRS{idVendor}=="0b1b", ATTRS{idProduct}=="0109", ENV{ID_MM_DEVICE_IGNORE}="1"
 
 # MP-2100 TH FI
 KERNEL=="*[0-9]", SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="2843", ATTRS{idProduct}=="0000", SYMLINK+="usbbema_mp2100thfi", OWNER="lp", GROUP="dialout", MODE="0666"
