@@ -29,6 +29,7 @@ try:
     from satcfe.entidades import COFINSSN
     from satcfe.entidades import MeioPagamento
     from satcfe.entidades import CFeVenda
+    from satcfe.entidades import InformacoesAdicionais
     from satcfe.entidades import DescAcrEntr
     from satcfe.entidades import CFeCancelamento
     from satcfe.excecoes import ErroRespostaSATInvalida
@@ -192,6 +193,10 @@ class Sat(Thread):
                 indRatISSQN='N')
         emitente.validar()
 
+        if json['informacoes_adicionais']:
+            kwargs['informacoes_adicionais'] = InformacoesAdicionais(
+                infCpl=json(['informacoes_adicionais'])
+            )
 
         return CFeVenda(
             CNPJ=punctuation_rm(json['company']['cnpj_software_house']),
