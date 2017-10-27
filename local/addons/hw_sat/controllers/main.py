@@ -195,7 +195,7 @@ class Sat(Thread):
 
         if json['informacoes_adicionais']:
             kwargs['informacoes_adicionais'] = InformacoesAdicionais(
-                infCpl="Pedido: " + json['informacoes_adicionais']
+                infCpl="Pedido: " + str(json['informacoes_adicionais'])
             )
 
         return CFeVenda(
