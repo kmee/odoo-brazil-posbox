@@ -256,6 +256,7 @@ class Sat(Thread):
                 'chave_cfe': resposta.chaveConsulta,
             }
         except Exception as e:
+            _logger.error('_cancel_cfe', exc_info=1)
             if hasattr(e, 'resposta'):
                 return e.resposta.mensagem
             elif hasattr(e, 'message'):
