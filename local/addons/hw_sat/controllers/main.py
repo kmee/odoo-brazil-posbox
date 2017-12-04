@@ -51,6 +51,20 @@ def punctuation_rm(string_value):
     return tmp_value
 
 
+class XPathMap(object):
+
+    def __init__(self, root):
+        self.root = root
+
+    def __getitem__(self, key, default=None):
+        nodelist = self.root.findtext(key)
+        if not nodelist:
+            return '*'
+        if len(nodelist) > 1:
+            return nodelist
+        return nodelist[0]
+
+
 class Sat(Thread):
     def __init__(self, codigo_ativacao, sat_path, impressora, printer_params, assinatura):
         Thread.__init__(self)
@@ -324,6 +338,13 @@ class Sat(Thread):
             StringIO.StringIO(base64.b64decode(xml)),
             self.printer
             )
+        anotacoes_corpo = '\n'.join([
+            '{xml[infCFe/infAdic/infCpl]}',
+            'Venda no.: {xml[infCFe/ide/nserieSAT]} / {xml[infCFe/ide/nCFe]}',
+        ]).format(
+            xml=XPathMap(extrato.root),
+        ).splitlines()
+        extrato.anotacoes_corpo.extend(anotacoes_corpo)
         extrato.imprimir()
         return True
 
