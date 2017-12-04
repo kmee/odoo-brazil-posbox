@@ -207,9 +207,11 @@ class Sat(Thread):
                 indRatISSQN='N')
         emitente.validar()
 
-        if json['informacoes_adicionais']:
+        informacoes_adicionais = json.get('informacoes_adicionais')
+        if informacoes_adicionais is not None:
             kwargs['informacoes_adicionais'] = InformacoesAdicionais(
-                infCpl="Pedido: " + str(json['informacoes_adicionais'])
+                # informacoes_adicionais pode ser um inteiro ou unicode:
+                infCpl=u"%s" % (informacoes_adicionais,),
             )
 
         return CFeVenda(
