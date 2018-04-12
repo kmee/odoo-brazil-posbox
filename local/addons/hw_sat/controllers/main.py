@@ -46,6 +46,14 @@ TWOPLACES = Decimal(10) ** -2
 FOURPLACES = Decimal(10) ** -4
 
 
+from escpos.file import FileConnection as Connection
+from escpos.impl.elgin import ElginI9 as Printer
+
+#conn = Connection('/dev/usb/lp0')
+#printer = Printer(conn)
+#printer.init()
+#impressora_elgin = printer
+
 def punctuation_rm(string_value):
     tmp_value = string_value.translate(None, string.punctuation)
     return tmp_value
@@ -70,12 +78,12 @@ class Sat(Thread):
         Thread.__init__(self)
         self.codigo_ativacao = codigo_ativacao
         self.sat_path = sat_path
-        self.impressora = impressora
+#        self.impressora = impressora
         self.printer_params = printer_params
         self.lock = Lock()
         self.satlock = Lock()
         self.status = {'status': 'connecting', 'messages': []}
-        self.printer = self._init_printer()
+#        self.printer = impressora_elgin
         self.device = self._get_device()
         self.assinatura = assinatura
 
@@ -229,7 +237,8 @@ class Sat(Thread):
         try:
             resposta = self.device.enviar_dados_venda(
                 self.__prepare_send_cfe(json))
-            self._print_extrato_venda(resposta.arquivoCFeSAT)
+#            self._print_extrato_venda(resposta.arquivoCFeSAT)
+            print (resposta)
             return {
                 'xml': resposta.arquivoCFeSAT,
                 'numSessao': resposta.numeroSessao,
@@ -263,8 +272,8 @@ class Sat(Thread):
                     order['chaveConsulta'], order['cnpj_software_house']
                 )
             )
-            self._print_extrato_cancelamento(
-                order['xml_cfe_venda'], resposta.arquivoCFeBase64)
+            # self._print_extrato_cancelamento(
+            #     order['xml_cfe_venda'], resposta.arquivoCFeBase64)
             return {
                 'order_id': order['order_id'],
                 'xml': resposta.arquivoCFeBase64,
@@ -309,28 +318,26 @@ class Sat(Thread):
 
     def _init_printer(self):
 
-        from escpos.serial import SerialSettings
+        # from escpos.serial import SerialSettings
+        #
+        # if self.impressora == 'epson-tm-t20':
+        #     _logger.info(u'SAT Impressao: Epson TM-T20')
+        #     from escpos.impl.epson import TMT20 as Printer
+        # elif self.impressora == 'bematech-mp4200th':
+        #     _logger.info(u'SAT Impressao: Bematech MP4200TH')
+        #     from escpos.impl.bematech import MP4200TH as Printer
+        # elif self.impressora == 'daruma-dr700':
+        #     _logger.info(u'SAT Impressao: Daruma Dr700')
+        #     from escpos.impl.daruma import DR700 as Printer
+        # elif self.impressora == 'elgin-i9':
+        #     _logger.info(u'SAT Impressao: Elgin I9')
+        #     from escpos.impl.elgin import ElginI9 as Printer
+        # else:
+        #     self.printer = False
+        # conn = SerialSettings.as_from(
+        #     self.printer_params).get_connection()
 
-        if self.impressora == 'epson-tm-t20':
-            _logger.info(u'SAT Impressao: Epson TM-T20')
-            from escpos.impl.epson import TMT20 as Printer
-        elif self.impressora == 'bematech-mp4200th':
-            _logger.info(u'SAT Impressao: Bematech MP4200TH')
-            from escpos.impl.bematech import MP4200TH as Printer
-        elif self.impressora == 'daruma-dr700':
-            _logger.info(u'SAT Impressao: Daruma Dr700')
-            from escpos.impl.daruma import DR700 as Printer
-        elif self.impressora == 'elgin-i9':
-            _logger.info(u'SAT Impressao: Elgin I9')
-            from escpos.impl.elgin import ElginI9 as Printer
-        else:
-            self.printer = False
-        conn = SerialSettings.as_from(
-            self.printer_params).get_connection()
-
-        printer = Printer(conn)
-        printer.init()
-        return printer
+        return impressora_elgin
 
 
     def _print_extrato_venda(self, xml):
