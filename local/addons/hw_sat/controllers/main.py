@@ -3,7 +3,7 @@ import logging
 import time
 from threading import Thread, Lock
 from requests import ConnectionError
-from decimal import Decimal
+from pybrasil.valor.decimal import Decimal
 import StringIO
 import openerp.addons.hw_proxy.controllers.main as hw_proxy
 from openerp import http
@@ -12,47 +12,34 @@ import re, string
 
 _logger = logging.getLogger(__name__)
 
-try:
-    import satcfe
-    from satcomum import constantes
-    from satcfe import ClienteSATLocal
-    from satcfe import ClienteSATHub
-    from satcfe import BibliotecaSAT
-    from satcfe.entidades import Emitente
-    from satcfe.entidades import Destinatario
-    from satcfe.entidades import LocalEntrega
-    from satcfe.entidades import Detalhamento
-    from satcfe.entidades import ProdutoServico
-    from satcfe.entidades import Imposto
-    from satcfe.entidades import ICMS00
-    from satcfe.entidades import PISSN
-    from satcfe.entidades import COFINSSN
-    from satcfe.entidades import MeioPagamento
-    from satcfe.entidades import CFeVenda
-    from satcfe.entidades import InformacoesAdicionais
-    from satcfe.entidades import DescAcrEntr
-    from satcfe.entidades import CFeCancelamento
-    from satcfe.excecoes import ErroRespostaSATInvalida
-    from satcfe.excecoes import ExcecaoRespostaSAT
-    from satextrato import ExtratoCFeVenda
-    from satextrato import ExtratoCFeCancelamento
+# import satcfe
+from satcomum import constantes
+# from satcfe import ClienteSATLocal
+# from satcfe import ClienteSATHub
+# from satcfe import BibliotecaSAT
+from satcfe.entidades import Emitente
+from satcfe.entidades import Destinatario
+from satcfe.entidades import LocalEntrega
+from satcfe.entidades import Detalhamento
+from satcfe.entidades import ProdutoServico
+from satcfe.entidades import Imposto
+from satcfe.entidades import ICMS00
+from satcfe.entidades import PISSN
+from satcfe.entidades import COFINSSN
+from satcfe.entidades import MeioPagamento
+from satcfe.entidades import CFeVenda
+from satcfe.entidades import InformacoesAdicionais
+from satcfe.entidades import DescAcrEntr
+from satcfe.entidades import CFeCancelamento
+from satcfe.excecoes import ErroRespostaSATInvalida
+from satcfe.excecoes import ExcecaoRespostaSAT
 
-except ImportError:
-    _logger.error('Odoo module hw_l10n_br_pos depends on the satcfe module')
-    satcfe = None
+from mfecfe.clientelocal import ClienteSATLocal
+from mfecfe import BibliotecaSAT
 
 
 TWOPLACES = Decimal(10) ** -2
 FOURPLACES = Decimal(10) ** -4
-
-
-from escpos.file import FileConnection as Connection
-from escpos.impl.elgin import ElginI9 as Printer
-
-#conn = Connection('/dev/usb/lp0')
-#printer = Printer(conn)
-#printer.init()
-#impressora_elgin = printer
 
 def punctuation_rm(string_value):
     tmp_value = string_value.translate(None, string.punctuation)
@@ -78,12 +65,12 @@ class Sat(Thread):
         Thread.__init__(self)
         self.codigo_ativacao = codigo_ativacao
         self.sat_path = sat_path
-#        self.impressora = impressora
+        self.impressora = impressora
         self.printer_params = printer_params
         self.lock = Lock()
         self.satlock = Lock()
         self.status = {'status': 'connecting', 'messages': []}
-#        self.printer = impressora_elgin
+        self.printer = False
         self.device = self._get_device()
         self.assinatura = assinatura
 
@@ -123,9 +110,13 @@ class Sat(Thread):
             self.set_status('error', 'Dados do sat incorretos')
             return None
         return ClienteSATLocal(
-            BibliotecaSAT(self.sat_path),
-            codigo_ativacao=self.codigo_ativacao
+            BibliotecaSAT('/home/sadamo/Integrador'),
+            codigo_ativacao='12345678'
         )
+        # return ClienteSATLocal(
+        #     BibliotecaSAT(self.sat_path),
+        #     codigo_ativacao=self.codigo_ativacao
+        # )
 
     def status_sat(self):
         with self.satlock:
@@ -210,8 +201,8 @@ class Sat(Thread):
             # TODO: Verificar se tamanho == 14: cnpj
             kwargs['destinatario'] = Destinatario(CPF=json['client'])
         emitente = Emitente(
-                CNPJ=punctuation_rm(json['company']['cnpj']),
-                IE=punctuation_rm(json['company']['ie']),
+                CNPJ=u'08723218000186',
+                IE=u'562377111111',
                 indRatISSQN='N')
         emitente.validar()
 
@@ -223,8 +214,8 @@ class Sat(Thread):
             )
 
         return CFeVenda(
-            CNPJ=punctuation_rm(json['company']['cnpj_software_house']),
-            signAC=self.assinatura,
+            CNPJ=u'16716114000172',
+            signAC=u'SGR-SAT SISTEMA DE GESTAO E RETAGUARDA DO SAT',
             numeroCaixa=json['configs_sat']['numero_caixa'],
             emitente=emitente,
             detalhamentos=detalhamentos,
@@ -235,9 +226,9 @@ class Sat(Thread):
 
     def _send_cfe(self, json):
         try:
-            resposta = self.device.enviar_dados_venda(
-                self.__prepare_send_cfe(json))
-#            self._print_extrato_venda(resposta.arquivoCFeSAT)
+            dados = self.__prepare_send_cfe(json)
+            resposta = self.device.enviar_dados_venda(dados)
+            # self._print_extrato_venda(resposta.arquivoCFeSAT)
             print (resposta)
             return {
                 'xml': resposta.arquivoCFeSAT,
@@ -403,8 +394,9 @@ class SatDriver(hw_proxy.Proxy):
 
     @http.route('/hw_proxy/enviar_cfe_sat/', type='json', auth='none', cors='*')
     def enviar_cfe_sat(self, json):
-        return hw_proxy.drivers['satcfe'].action_call_sat('send', json)
-
+        res =  hw_proxy.drivers['satcfe'].action_call_sat('send', json)
+	print ('RESPOSTA: ', res)
+	return res
     @http.route('/hw_proxy/cancelar_cfe/', type='json', auth='none', cors='*')
     def cancelar_cfe(self, json):
         return hw_proxy.drivers['satcfe'].action_call_sat('cancel', json)

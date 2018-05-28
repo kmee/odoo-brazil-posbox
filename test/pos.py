@@ -19,7 +19,7 @@ from satcfe.excecoes import ErroRespostaSATInvalida
 from satcfe.excecoes import ExcecaoRespostaSAT
 
 cliente = ClienteSATLocal(
-    BibliotecaSAT('/usr/lib/libbemasat.so'),
+    BibliotecaSAT('/usr/lib/libsat.so'),
     codigo_ativacao='bema1234'
    )
 print cliente
