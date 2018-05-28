@@ -81,12 +81,12 @@ class Sat(Thread):
         Thread.__init__(self)
         self.codigo_ativacao = codigo_ativacao
         self.sat_path = sat_path
-        # self.impressora = impressora
-        # self.printer_params = printer_params
+#        self.impressora = impressora
+        self.printer_params = printer_params
         self.lock = Lock()
         self.satlock = Lock()
         self.status = {'status': 'connecting', 'messages': []}
-        # self.printer = impressora_elgin
+#        self.printer = impressora_elgin
         self.device = self._get_device()
         self.assinatura = assinatura
 
@@ -240,7 +240,7 @@ class Sat(Thread):
         try:
             resposta = self.device.enviar_dados_venda(
                 self.__prepare_send_cfe(json))
-            # self._print_extrato_venda(resposta.arquivoCFeSAT)
+#            self._print_extrato_venda(resposta.arquivoCFeSAT)
             print (resposta)
             return {
                 'xml': resposta.arquivoCFeSAT,
@@ -294,30 +294,6 @@ class Sat(Thread):
                        "Contate o suporte técnico."
 
     def action_call_sat(self, task, json=False):
-        _logger.info('MFE: Task {0}'.format(task))
-
-        try:
-            with self.satlock:
-                if task == 'connect':
-                    pass
-                elif task == 'get_device':
-                    return self._get_device()
-                elif task == 'reprint':
-                    return self._reprint_cfe(json)
-                elif task == 'send':
-                    return self._send_cfe(json)
-                elif task == 'cancel':
-                    return self._cancel_cfe(json)
-
-        except ErroRespostaSATInvalida as ex:
-            _logger.error('SAT Error: {0}'.format(ex))
-            return {'excessao': ex}
-        except ExcecaoRespostaSAT as ex:
-            _logger.error('SAT Error: {0}'.format(ex))
-            return {'excessao': ex}
-        except Exception as ex:
-            _logger.error('SAT Error: {0}'.format(ex))
-            return {'excessao': ex}
 
         _logger.info('SAT: Task {0}'.format(task))
 
@@ -333,7 +309,6 @@ class Sat(Thread):
                     return self._send_cfe(json)
                 elif task == 'cancel':
                     return self._cancel_cfe(json)
-
         except ErroRespostaSATInvalida as ex:
             _logger.error('SAT Error: {0}'.format(ex))
             return {'excessao': ex}
@@ -413,6 +388,7 @@ class Sat(Thread):
                 self.device = self.action_call_sat('get_device')
                 if not self.device:
                     time.sleep(40)
+
 
 class SatDriver(hw_proxy.Proxy):
 
