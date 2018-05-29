@@ -12,6 +12,9 @@ import re, string
 
 _logger = logging.getLogger(__name__)
 
+from mfecfe import ClienteVfpeLocal
+from mfecfe import BibliotecaSAT
+
 try:
     import satcfe
     from satcomum import constantes
@@ -78,12 +81,12 @@ class Sat(Thread):
         Thread.__init__(self)
         self.codigo_ativacao = codigo_ativacao
         self.sat_path = sat_path
-#        self.impressora = impressora
-        self.printer_params = printer_params
+        # self.impressora = impressora
+        # self.printer_params = printer_params
         self.lock = Lock()
         self.satlock = Lock()
         self.status = {'status': 'connecting', 'messages': []}
-#        self.printer = impressora_elgin
+        # self.printer = impressora_elgin
         self.device = self._get_device()
         self.assinatura = assinatura
 
@@ -131,8 +134,7 @@ class Sat(Thread):
         with self.satlock:
             if self.device:
                 try:
-                    if self.device.consultar_sat():
-                        self.set_status('connected', 'Connected to SAT')
+                    self.set_status('connected', 'Connected to SAT')
                 except ErroRespostaSATInvalida as ex_sat_invalida:
                     # o equipamento retornou uma resposta que não faz sentido;
                     # loga, e lança novamente ou lida de alguma maneira
@@ -237,7 +239,7 @@ class Sat(Thread):
         try:
             resposta = self.device.enviar_dados_venda(
                 self.__prepare_send_cfe(json))
-#            self._print_extrato_venda(resposta.arquivoCFeSAT)
+            # self._print_extrato_venda(resposta.arquivoCFeSAT)
             print (resposta)
             return {
                 'xml': resposta.arquivoCFeSAT,
@@ -290,7 +292,35 @@ class Sat(Thread):
                 return "Erro ao validar os dados para o xml! " \
                        "Contate o suporte técnico."
 
+    def action_call_mfe(self, task, json=False):
+        if task == 'enviarpagamento':
+            return ClienteVfpeLocal.enviar_pagamento(json)
+
     def action_call_sat(self, task, json=False):
+        _logger.info('MFE: Task {0}'.format(task))
+
+        try:
+            with self.satlock:
+                if task == 'connect':
+                    pass
+                elif task == 'get_device':
+                    return self._get_device()
+                elif task == 'reprint':
+                    return self._reprint_cfe(json)
+                elif task == 'send':
+                    return self._send_cfe(json)
+                elif task == 'cancel':
+                    return self._cancel_cfe(json)
+
+        except ErroRespostaSATInvalida as ex:
+            _logger.error('SAT Error: {0}'.format(ex))
+            return {'excessao': ex}
+        except ExcecaoRespostaSAT as ex:
+            _logger.error('SAT Error: {0}'.format(ex))
+            return {'excessao': ex}
+        except Exception as ex:
+            _logger.error('SAT Error: {0}'.format(ex))
+            return {'excessao': ex}
 
         _logger.info('SAT: Task {0}'.format(task))
 
@@ -306,6 +336,9 @@ class Sat(Thread):
                     return self._send_cfe(json)
                 elif task == 'cancel':
                     return self._cancel_cfe(json)
+                elif task == 'enviarpagamento':
+                    return self._enviar_pagamento(json)
+
         except ErroRespostaSATInvalida as ex:
             _logger.error('SAT Error: {0}'.format(ex))
             return {'excessao': ex}
@@ -357,6 +390,54 @@ class Sat(Thread):
         extrato.imprimir()
         return True
 
+    def comando_vfpe(self, template, **kwargs):
+        numero_identificador = kwargs.get(
+            'numero_sessao',
+            self.gerar_numero_sessao()
+        )
+
+        kwargs['numero_identificador'] = numero_identificador
+        xml = render_xml(self._path, template, True, **kwargs)
+        xml.write(
+            str(self.biblioteca.caminho) + 'input/' + str(numero_identificador) + '-' + template.lower(),
+            xml_declaration=True,
+            encoding='UTF-8'
+        )
+
+        observer = Observer()
+        observer.numero_identificador = False
+        observer.src_path = False
+        observer.schedule(MonitorIntegrador(observer), path=str(self.biblioteca.caminho) + 'output')
+        observer.start()
+
+        while True:
+            # Analisa a pasta a cada um segundo.
+            time.sleep(1)
+            if str(numero_identificador) == observer.numero_identificador and observer.src_path:
+                # Ao encontrar um arquivo de retorno com o mesmo numero identificador da remessa sai do loop.
+                break
+        observer.stop()
+        observer.join()
+        return observer.resposta
+
+    def _enviar_pagamento(self, json):
+        consulta = {
+            'chave_acesso_validador': self._chave_acesso_validador,
+            'chave_requisicao': json['chave_requisicao'],
+            'estabecimento': json['estabecimento'],
+            'serial_pos': json['serial_pos'],
+            'cpnj': json['cpnj'],
+            'icms_base': json['icms_base'],
+            'vr_total_venda': json['vr_total_venda'],
+            'h_multiplos_pagamentos': json['h_multiplos_pagamentos'],
+            'h_anti_fraude': json['h_anti_fraude'],
+            'cod_moeda': json['cod_moeda'],
+            'origem_pagemento': json['origem_pagemento']
+        }
+        return self.comando_vfpe('EnviarPagamento.xml', consulta=consulta)
+
+
+
     def _print_extrato_cancelamento(self, xml_venda, xml_cancelamento):
         if not self.printer:
             return False
@@ -395,10 +476,21 @@ class SatDriver(hw_proxy.Proxy):
     #     if not hw_proxy.drivers['satcfe'].device:
     #         hw_proxy.drivers['satcfe'].get_device()
     #     return self.get_status()
-
+    
+    @http.route('/hw_proxy/enviar_pagamento/', type='json', auth='none', cors='*')
+    def enviar_pagamento(self, json):
+        hw_proxy.drivers['mfesat'] = ClienteVfpeLocal(BibliotecaSAT(''), '12345678')
+        hw_proxy.drivers['satcfe'].action_call_mfe('enviarpagamento',json)
+        return True
+    
     @http.route('/hw_proxy/init/', type='json', auth='none', cors='*')
     def init(self, json):
         hw_proxy.drivers['satcfe'] = Sat(**json)
+        return True
+
+    @http.route('/hw_proxy/init_mfe/', type='json', auth='none', cors='*')
+    def init(self, biblioteca, chave_acesso_validador=None, numerador_sessao=None):
+        hw_proxy.drivers['mfecfe'] = ClienteVfpeLocal(biblioteca, chave_acesso_validador, numerador_sessao)
         return True
 
     @http.route('/hw_proxy/enviar_cfe_sat/', type='json', auth='none', cors='*')
