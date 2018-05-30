@@ -23,8 +23,11 @@ from satcfe.entidades import CFeCancelamento
 from satcfe.excecoes import ErroRespostaSATInvalida
 from satcfe.excecoes import ExcecaoRespostaSAT
 
-from mfecfe.clientelocal import ClienteSATLocal
-from mfecfe import BibliotecaSAT
+from satcfe.clientelocal import ClienteSATLocal
+from satcfe import BibliotecaSAT
+
+from mfecfe.clientelocal import ClienteSATLocal as ClienteMFELocal
+from mfecfe import BibliotecaSAT as BibliotecaMFE
 
 from satextrato import ExtratoCFeCancelamento, ExtratoCFeVenda
 
@@ -55,7 +58,8 @@ class XPathMap(object):
 
 
 class Sat(Thread):
-    def __init__(self, codigo_ativacao, sat_path, impressora, printer_params, assinatura):
+    def __init__(self, codigo_ativacao, sat_path, impressora, printer_params,
+                 assinatura, tipo_equipamento):
         Thread.__init__(self)
         self.codigo_ativacao = codigo_ativacao
         self.sat_path = sat_path
@@ -65,8 +69,10 @@ class Sat(Thread):
         self.satlock = Lock()
         self.status = {'status': 'connecting', 'messages': []}
         self.printer = False
+        self.tipo_equipamento = tipo_equipamento
         self.device = self._get_device()
         self.assinatura = assinatura
+
 
     def lockedstart(self):
         with self.lock:
@@ -103,20 +109,22 @@ class Sat(Thread):
         if not self.sat_path and not self.codigo_ativacao:
             self.set_status('error', 'Dados do sat incorretos')
             return None
+        if self.tipo_equipamento == 'mfe':
+            return ClienteMFELocal(
+                BibliotecaMFE(self.sat_path),
+                codigo_ativacao=self.codigo_ativacao
+            )
         return ClienteSATLocal(
-            BibliotecaSAT('/home/sadamo/Integrador'),
-            codigo_ativacao='12345678'
+            BibliotecaSAT(self.sat_path),
+            codigo_ativacao=self.codigo_ativacao
         )
-        # return ClienteSATLocal(
-        #     BibliotecaSAT(self.sat_path),
-        #     codigo_ativacao=self.codigo_ativacao
-        # )
 
     def status_sat(self):
         with self.satlock:
             if self.device:
                 try:
-                    if self.device.consultar_sat():
+                    consulta = self.device.consultar_sat()
+                    if consulta:
                         self.set_status('connected', 'Connected to SAT')
                 except ErroRespostaSATInvalida as ex_sat_invalida:
                     # o equipamento retornou uma resposta que não faz sentido;
