@@ -134,7 +134,8 @@ class Sat(Thread):
         with self.satlock:
             if self.device:
                 try:
-                    self.set_status('connected', 'Connected to SAT')
+                    if self.device.consultar_sat():
+                        self.set_status('connected', 'Connected to SAT')
                 except ErroRespostaSATInvalida as ex_sat_invalida:
                     # o equipamento retornou uma resposta que não faz sentido;
                     # loga, e lança novamente ou lida de alguma maneira
@@ -413,9 +414,14 @@ class Sat(Thread):
                 if not self.device:
                     time.sleep(40)
 
-
 class SatDriver(hw_proxy.Proxy):
 
+    def get_status(self):
+        statuses = {}
+        for driver in hw_proxy.drivers:
+            if 'mfesat' != driver:
+                statuses[driver] = hw_proxy.drivers[driver].get_status()
+        return statuses
     # TODO: Temos um problema quando o sat é iniciado depois do POS
     # @http.route('/hw_proxy/status_json', type='json', auth='none', cors='*')
     # def status_json(self):
@@ -425,8 +431,34 @@ class SatDriver(hw_proxy.Proxy):
     
     @http.route('/hw_proxy/enviar_pagamento/', type='json', auth='none', cors='*')
     def enviar_pagamento(self, json):
-        resposta = hw_proxy.drivers['mfesat'].enviar_pagamento('','','','','','','','','','','False')
-        resposta
+        numero_caixa = json['configs_sat']['numero_caixa']
+        cnpjsh = json['configs_sat']['cnpj_software_house']
+        icms_base = json['orderlines'][0]['estimated_taxes']
+        valor_total_venda = json['orderlines'][0]['price_with_tax']
+        multiplos_pagamentos = False
+        controle_antifraude = False
+        codigo_moeda = json['currency']['name']
+        cupom_nfce = False
+
+        resposta = hw_proxy.drivers['mfesat'].enviar_pagamento('26359854-5698-1365-9856-965478231456', numero_caixa,'3',
+        cnpjsh, icms_base, valor_total_venda, multiplos_pagamentos, controle_antifraude, codigo_moeda, cupom_nfce,'False')
+
+        resposta_pagamento = resposta.split('|')
+
+        if len(resposta_pagamento[0]) >= 7:
+            self.id_pagamento = resposta_pagamento[0]
+            self.id_fila = resposta_pagamento[1]
+
+            # Retorno do status do pagamento só é necessário em uma venda
+            # efetuada por TEF.
+            resposta_pagamento_validador = hw_proxy.drivers['mfesat'].verificar_status_validador(
+                cnpjsh, self.id_fila
+            )
+
+            resposta_pagamento_validador
+
+            self.pagamento_valido = True
+
         return True
 
     @http.route('/hw_proxy/init/', type='json', auth='none', cors='*')
