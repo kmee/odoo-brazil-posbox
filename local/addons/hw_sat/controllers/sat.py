@@ -3,11 +3,13 @@ import logging
 import time
 from threading import Thread, Lock
 from requests import ConnectionError
-# from pybrasil.valor.decimal import Decimal
 from decimal import Decimal
 import StringIO
 import base64
 import string
+
+import openerp.addons.hw_proxy.controllers.main as hw_proxy
+
 
 from satcfe.entidades import Emitente
 from satcfe.entidades import Destinatario
@@ -27,7 +29,7 @@ from satcfe.excecoes import ExcecaoRespostaSAT
 from satcfe.clientelocal import ClienteSATLocal
 from satcfe import BibliotecaSAT
 
-from mfecfe.clientelocal import ClienteSATLocal as ClienteMFELocal
+from mfecfe.clientelocal import ClienteVfpeLocal
 from mfecfe import BibliotecaSAT as BibliotecaMFE
 
 from satextrato import ExtratoCFeCancelamento, ExtratoCFeVenda
@@ -111,9 +113,9 @@ class Sat(Thread):
             self.set_status('error', 'Dados do sat incorretos')
             return None
         if self.tipo_equipamento == 'mfe':
-            return ClienteMFELocal(
+            return ClienteVfpeLocal(
                 BibliotecaMFE(self.sat_path),
-                codigo_ativacao=self.codigo_ativacao
+                chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D'
             )
         return ClienteSATLocal(
             BibliotecaSAT(self.sat_path),
@@ -228,25 +230,62 @@ class Sat(Thread):
             **kwargs
         )
 
+    def _prepare_pagamento(self, json):
+        numero_caixa = json['configs_sat']['numero_caixa']
+        cnpjsh = '98155757000159'  # json['configs_sat']['cnpj_software_house']
+        icms_base = json['orderlines'][0]['estimated_taxes']
+        valor_total_venda = json['orderlines'][0]['price_with_tax']
+        multiplos_pagamentos = True
+        controle_antifraude = False
+        codigo_moeda = json['currency']['name']
+        cupom_nfce = True
+
+        resposta = hw_proxy.drivers['satcfe'].enviar_pagamento('26359854-5698-1365-9856-965478231456', numero_caixa,
+                                                               'TEF',
+                                                               '30146465000116', icms_base, valor_total_venda,
+                                                               multiplos_pagamentos, controle_antifraude, codigo_moeda,
+                                                               cupom_nfce, 'False')
+
+        resposta_pagamento = resposta.split('|')
+
+        resposta_pagamento_validador = False
+        if len(resposta_pagamento[0]) >= 7:
+            self.id_pagamento = resposta_pagamento[0]
+            self.id_fila = '958860'
+            self.numero_identificador = resposta_pagamento[1]
+
+            # Retorno do status do pagamento só é necessário em uma venda
+            # efetuada por TEF.
+            # TODO: fazer uma rotina para verificar ate o pagamento ser confirmado
+            resposta_pagamento_validador = hw_proxy.drivers['satcfe'].verificar_status_validador(
+                cnpjsh, self.id_fila
+            )
+            self.pagamento_valido = True
+
+        return resposta_pagamento_validador
+
     def _send_cfe(self, json):
         try:
-            dados = self.__prepare_send_cfe(json)
-            resposta = self.device.enviar_dados_venda(dados)
-            # self._print_extrato_venda(resposta.arquivoCFeSAT)
-            print (resposta)
-            return {
-                'xml': resposta.arquivoCFeSAT,
-                'numSessao': resposta.numeroSessao,
-                'chave_cfe': resposta.chaveConsulta,
-            }
-        except Exception as e:
-            if hasattr(e, 'resposta'):
-                return e.resposta.mensagem
-            elif hasattr(e, 'message'):
-                return e.message
-            else:
-                return "Erro ao validar os dados para o xml! " \
-                       "Contate o suporte técnico."
+            if json['configs_sat']['tipo_equipameto'] == 'mfe':
+                pagamento = self._prepare_pagamento(json=json)
+            if True: #todo: resposta fiscal
+                dados = self.__prepare_send_cfe(json)
+                resposta = self.device.enviar_dados_venda(dados)
+                # self._print_extrato_venda(resposta.arquivoCFeSAT)
+                    print (resposta)
+                return {
+                    'xml': resposta.arquivoCFeSAT,
+                    'numSessao': resposta.numeroSessao,
+                    'chave_cfe': resposta.chaveConsulta,
+                }
+            except Exception as e:
+                if hasattr(e, 'resposta'):
+                    return e.resposta.mensagem
+                elif hasattr(e, 'message'):
+                    return e.message
+                else:
+                    return "Erro ao validar os dados para o xml! " \
+                           "Contate o suporte técnico."
 
     def __prepare_cancel_cfe(self, chCanc, cnpj):
         kwargs = {}
@@ -311,28 +350,28 @@ class Sat(Thread):
             _logger.error('SAT Error: {0}'.format(ex))
             return {'excessao': ex}
 
-    def _init_printer(self):
-
-        # from escpos.serial import SerialSettings
-        #
-        # if self.impressora == 'epson-tm-t20':
-        #     _logger.info(u'SAT Impressao: Epson TM-T20')
-        #     from escpos.impl.epson import TMT20 as Printer
-        # elif self.impressora == 'bematech-mp4200th':
-        #     _logger.info(u'SAT Impressao: Bematech MP4200TH')
-        #     from escpos.impl.bematech import MP4200TH as Printer
-        # elif self.impressora == 'daruma-dr700':
-        #     _logger.info(u'SAT Impressao: Daruma Dr700')
-        #     from escpos.impl.daruma import DR700 as Printer
-        # elif self.impressora == 'elgin-i9':
-        #     _logger.info(u'SAT Impressao: Elgin I9')
-        #     from escpos.impl.elgin import ElginI9 as Printer
-        # else:
-        #     self.printer = False
-        # conn = SerialSettings.as_from(
-        #     self.printer_params).get_connection()
-
-        return impressora_elgin
+    # def _init_printer(self):
+    #
+    #     # from escpos.serial import SerialSettings
+    #     #
+    #     # if self.impressora == 'epson-tm-t20':
+    #     #     _logger.info(u'SAT Impressao: Epson TM-T20')
+    #     #     from escpos.impl.epson import TMT20 as Printer
+    #     # elif self.impressora == 'bematech-mp4200th':
+    #     #     _logger.info(u'SAT Impressao: Bematech MP4200TH')
+    #     #     from escpos.impl.bematech import MP4200TH as Printer
+    #     # elif self.impressora == 'daruma-dr700':
+    #     #     _logger.info(u'SAT Impressao: Daruma Dr700')
+    #     #     from escpos.impl.daruma import DR700 as Printer
+    #     # elif self.impressora == 'elgin-i9':
+    #     #     _logger.info(u'SAT Impressao: Elgin I9')
+    #     #     from escpos.impl.elgin import ElginI9 as Printer
+    #     # else:
+    #     #     self.printer = False
+    #     # conn = SerialSettings.as_from(
+    #     #     self.printer_params).get_connection()
+    #
+    #     return impressora_elgin
 
     def _print_extrato_venda(self, xml):
         if not self.printer:

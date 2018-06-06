@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
-import time
-from threading import Thread, Lock
-from requests import ConnectionError
-from decimal import Decimal
-import StringIO
 import openerp.addons.hw_proxy.controllers.main as hw_proxy
 from openerp import http
 from .sat import Sat
+from mfecfe import BibliotecaSAT as BibliotecaMFE
+from mfecfe.clientelocal import ClienteVfpeLocal
 
 
 class SatDriver(hw_proxy.Proxy):
@@ -18,6 +14,7 @@ class SatDriver(hw_proxy.Proxy):
             if 'mfesat' != driver:
                 statuses[driver] = hw_proxy.drivers[driver].get_status()
         return statuses
+
     # TODO: Temos um problema quando o sat é iniciado depois do POS
     # @http.route('/hw_proxy/status_json', type='json', auth='none', cors='*')
     # def status_json(self):
@@ -68,11 +65,11 @@ class SatDriver(hw_proxy.Proxy):
         hw_proxy.drivers['satcfe'] = Sat(**json)
         return True
 
-    @http.route('/hw_proxy/init_mfe/', type='json', auth='none', cors='*')
-    def init_mfe(self, json):
-        hw_proxy.drivers['mfesat'] = ClienteVfpeLocal(mfeBibliotecaSAT('/home/atillasilva/Integrador'),
-                                                      chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D')
-        return True
+    # @http.route('/hw_proxy/init_mfe/', type='json', auth='none', cors='*')
+    # def init_mfe(self, json):
+    #     hw_proxy.drivers['mfesat'] = ClienteVfpeLocal(BibliotecaMFE('/home/atillasilva/Integrador'),
+    #                                                   chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D')
+    #     return True
 
     @http.route('/hw_proxy/enviar_cfe_sat/', type='json', auth='none', cors='*')
     def enviar_cfe_sat(self, json):
