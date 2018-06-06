@@ -3,7 +3,8 @@ import logging
 import time
 from threading import Thread, Lock
 from requests import ConnectionError
-from pybrasil.valor.decimal import Decimal
+# from pybrasil.valor.decimal import Decimal
+from decimal import Decimal
 import StringIO
 import base64
 import string
@@ -204,7 +205,8 @@ class Sat(Thread):
             kwargs['destinatario'] = Destinatario(CPF=json['client'])
         emitente = Emitente(
                 CNPJ=u'08723218000186',
-                IE=u'562377111111',
+                # IE=u'562377111111',
+                IE=u'149626224113',
                 indRatISSQN='N')
         emitente.validar()
 
