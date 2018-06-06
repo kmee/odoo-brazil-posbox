@@ -8,9 +8,6 @@ import StringIO
 import base64
 import string
 
-import openerp.addons.hw_proxy.controllers.main as hw_proxy
-
-
 from satcfe.entidades import Emitente
 from satcfe.entidades import Destinatario
 from satcfe.entidades import Detalhamento
@@ -28,9 +25,10 @@ from satcfe.excecoes import ExcecaoRespostaSAT
 
 from satcfe.clientelocal import ClienteSATLocal
 from satcfe import BibliotecaSAT
-
-from mfecfe.clientelocal import ClienteVfpeLocal
+from mfecfe.clientelocal import ClienteSATLocal as ClienteMFELocal
 from mfecfe import BibliotecaSAT as BibliotecaMFE
+from mfecfe.clientelocal import ClienteVfpeLocal
+
 
 from satextrato import ExtratoCFeCancelamento, ExtratoCFeVenda
 
@@ -113,9 +111,10 @@ class Sat(Thread):
             self.set_status('error', 'Dados do sat incorretos')
             return None
         if self.tipo_equipamento == 'mfe':
-            return ClienteVfpeLocal(
-                BibliotecaMFE(self.sat_path),
-                chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D'
+            return ClienteMFELocal(
+                BibliotecaMFE('/home/atillasilva/Integrador'),
+                codigo_ativacao=self.codigo_ativacao,
+                # chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D'
             )
         return ClienteSATLocal(
             BibliotecaSAT(self.sat_path),
@@ -126,9 +125,9 @@ class Sat(Thread):
         with self.satlock:
             if self.device:
                 try:
-                    consulta = self.device.consultar_sat()
-                    if consulta:
-                        self.set_status('connected', 'Connected to SAT')
+                    # consulta = self.device.consultar_sat()
+                    # if consulta:
+                    self.set_status('connected', 'Connected to SAT')
                 except ErroRespostaSATInvalida as ex_sat_invalida:
                     # o equipamento retornou uma resposta que não faz sentido;
                     # loga, e lança novamente ou lida de alguma maneira
@@ -207,8 +206,8 @@ class Sat(Thread):
             kwargs['destinatario'] = Destinatario(CPF=json['client'])
         emitente = Emitente(
                 CNPJ=u'08723218000186',
-                # IE=u'562377111111',
-                IE=u'149626224113',
+                IE=u'562377111111',
+                # IE=u'149626224113',
                 indRatISSQN='N')
         emitente.validar()
 
@@ -230,7 +229,7 @@ class Sat(Thread):
             **kwargs
         )
 
-    def _prepare_pagamento(self, json):
+    def _prepare_pagamento(self, json, cliente):
         numero_caixa = json['configs_sat']['numero_caixa']
         cnpjsh = '98155757000159'  # json['configs_sat']['cnpj_software_house']
         icms_base = json['orderlines'][0]['estimated_taxes']
@@ -240,7 +239,7 @@ class Sat(Thread):
         codigo_moeda = json['currency']['name']
         cupom_nfce = True
 
-        resposta = hw_proxy.drivers['satcfe'].enviar_pagamento('26359854-5698-1365-9856-965478231456', numero_caixa,
+        resposta = cliente.enviar_pagamento('26359854-5698-1365-9856-965478231456', numero_caixa,
                                                                'TEF',
                                                                '30146465000116', icms_base, valor_total_venda,
                                                                multiplos_pagamentos, controle_antifraude, codigo_moeda,
@@ -257,7 +256,7 @@ class Sat(Thread):
             # Retorno do status do pagamento só é necessário em uma venda
             # efetuada por TEF.
             # TODO: fazer uma rotina para verificar ate o pagamento ser confirmado
-            resposta_pagamento_validador = hw_proxy.drivers['satcfe'].verificar_status_validador(
+            resposta_pagamento_validador = cliente.verificar_status_validador(
                 cnpjsh, self.id_fila
             )
             self.pagamento_valido = True
@@ -266,11 +265,29 @@ class Sat(Thread):
 
     def _send_cfe(self, json):
         try:
+            cliente = ClienteVfpeLocal(
+                BibliotecaMFE('/home/atillasilva/Integrador'),
+                chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D'
+            )
             if json['configs_sat']['tipo_equipamento'] == 'mfe':
-                pagamento = self._prepare_pagamento(json=json)
+                pagamento = self._prepare_pagamento(json=json, cliente=cliente)
             if True: #todo: resposta fiscal
                 dados = self.__prepare_send_cfe(json)
                 resposta = self.device.enviar_dados_venda(dados)
+                print resposta
+                if resposta.EEEEE == '06000':
+                    resposta_fiscal = cliente.resposta_fiscal(
+                        id_fila=resposta.id_fila,
+                        chave_acesso=resposta.chaveConsulta,
+                        nsu=pagamento.CodigoPagamento,
+                        numero_aprovacao=pagamento.CodigoAutorizacao,
+                        bandeira='1',
+                        adquirente=pagamento.DonoCartao,
+                        cnpj='30146465000116',
+                        impressao_fiscal=dados._informacoes_adicionais.infCpl,
+                        numero_documento=resposta.numeroSessao,
+                    )
+
                 # self._print_extrato_venda(resposta.arquivoCFeSAT)
                 return {
                     'xml': resposta.arquivoCFeSAT,

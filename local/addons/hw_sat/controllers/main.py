@@ -2,8 +2,7 @@
 import openerp.addons.hw_proxy.controllers.main as hw_proxy
 from openerp import http
 from .sat import Sat
-from mfecfe import BibliotecaSAT as BibliotecaMFE
-from mfecfe.clientelocal import ClienteVfpeLocal
+from mfecfe.clientelocal import ClienteSATLocal
 
 
 class SatDriver(hw_proxy.Proxy):
@@ -11,7 +10,7 @@ class SatDriver(hw_proxy.Proxy):
     def get_status(self):
         statuses = {}
         for driver in hw_proxy.drivers:
-            if not isinstance(hw_proxy.drivers[driver].device, ClienteVfpeLocal):
+            if not isinstance(hw_proxy.drivers[driver].device, ClienteSATLocal):
                 statuses[driver] = hw_proxy.drivers[driver].get_status()
             else:
                 statuses[driver] = {'status': 'connected', 'messages': ['Connected to SAT']}
