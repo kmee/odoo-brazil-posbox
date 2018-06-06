@@ -272,7 +272,6 @@ class Sat(Thread):
                 dados = self.__prepare_send_cfe(json)
                 resposta = self.device.enviar_dados_venda(dados)
                 # self._print_extrato_venda(resposta.arquivoCFeSAT)
-                    print (resposta)
                 return {
                     'xml': resposta.arquivoCFeSAT,
                     'numSessao': resposta.numeroSessao,
