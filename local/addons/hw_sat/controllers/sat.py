@@ -266,7 +266,7 @@ class Sat(Thread):
 
     def _send_cfe(self, json):
         try:
-            if json['configs_sat']['tipo_equipameto'] == 'mfe':
+            if json['configs_sat']['tipo_equipamento'] == 'mfe':
                 pagamento = self._prepare_pagamento(json=json)
             if True: #todo: resposta fiscal
                 dados = self.__prepare_send_cfe(json)

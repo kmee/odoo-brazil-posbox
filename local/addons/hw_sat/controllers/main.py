@@ -11,8 +11,10 @@ class SatDriver(hw_proxy.Proxy):
     def get_status(self):
         statuses = {}
         for driver in hw_proxy.drivers:
-            if 'mfesat' != driver:
+            if not isinstance(hw_proxy.drivers[driver].device, ClienteVfpeLocal):
                 statuses[driver] = hw_proxy.drivers[driver].get_status()
+            else:
+                statuses[driver] = {'status': 'connected', 'messages': ['Connected to SAT']}
         return statuses
 
     # TODO: Temos um problema quando o sat é iniciado depois do POS
