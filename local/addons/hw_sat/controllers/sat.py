@@ -231,17 +231,18 @@ class Sat(Thread):
 
     def _prepare_pagamento(self, json, cliente):
         numero_caixa = json['configs_sat']['numero_caixa']
-        cnpjsh = '98155757000159'  # json['configs_sat']['cnpj_software_house']
+        cnpjsh = json['configs_sat']['cnpj_software_house'] #'98155757000159'
         icms_base = json['orderlines'][0]['estimated_taxes']
         valor_total_venda = json['orderlines'][0]['price_with_tax']
-        multiplos_pagamentos = True
-        controle_antifraude = False
+        multiplos_pagamentos = json['configs_sat']['multiplos_pagamentos']
+        controle_antifraude = json['configs_sat']['anti_fraude']
         codigo_moeda = json['currency']['name']
         cupom_nfce = True
+        cnpj = json['company']['cnpj']
 
         resposta = cliente.enviar_pagamento('26359854-5698-1365-9856-965478231456', numero_caixa,
                                                                'TEF',
-                                                               '30146465000116', icms_base, valor_total_venda,
+                                                               cnpj, icms_base, valor_total_venda,
                                                                multiplos_pagamentos, controle_antifraude, codigo_moeda,
                                                                cupom_nfce, 'False')
 
@@ -265,25 +266,26 @@ class Sat(Thread):
 
     def _send_cfe(self, json):
         try:
+            equipamento = json['configs_sat']['tipo_equipamento']
             cliente = ClienteVfpeLocal(
                 BibliotecaMFE('/home/atillasilva/Integrador'),
                 chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D'
             )
-            if json['configs_sat']['tipo_equipamento'] == 'mfe':
+            if equipamento == 'mfe':
                 pagamento = self._prepare_pagamento(json=json, cliente=cliente)
             if True: #todo: resposta fiscal
                 dados = self.__prepare_send_cfe(json)
                 resposta = self.device.enviar_dados_venda(dados)
                 print resposta
-                if resposta.EEEEE == '06000':
+                if resposta.EEEEE == '06000' and equipamento == 'mfe':
                     resposta_fiscal = cliente.resposta_fiscal(
                         id_fila=resposta.id_fila,
                         chave_acesso=resposta.chaveConsulta,
                         nsu=pagamento.CodigoPagamento,
                         numero_aprovacao=pagamento.CodigoAutorizacao,
-                        bandeira='1',
+                        bandeira=pagamento.Tipo, # '1'
                         adquirente=pagamento.DonoCartao,
-                        cnpj='30146465000116',
+                        cnpj=json['company']['cnpj'], #'30146465000116'
                         impressao_fiscal=dados._informacoes_adicionais.infCpl,
                         numero_documento=resposta.numeroSessao,
                     )
