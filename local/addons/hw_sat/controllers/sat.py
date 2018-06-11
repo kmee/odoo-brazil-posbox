@@ -266,7 +266,7 @@ class Sat(Thread):
         resposta_pagamento_validador = False
         if len(resposta_pagamento[0]) >= 7:
             self.id_pagamento = resposta_pagamento[0]
-            self.id_fila = json.get('id_fila') or resposta_pagamento[1]
+            self.id_fila = '76543' #json.get('id_fila') or resposta_pagamento[1]
             self.numero_identificador = resposta_pagamento[1]
 
             # Retorno do status do pagamento só é necessário em uma venda
