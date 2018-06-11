@@ -37,6 +37,15 @@ from satextrato import ExtratoCFeCancelamento, ExtratoCFeVenda
 _logger = logging.getLogger(__name__)
 
 
+from escpos.file import FileConnection as Connection
+from escpos.impl.elgin import ElginI9 as Printer
+
+conn = Connection('/dev/usb/lp0')
+printer = Printer(conn)
+printer.init()
+impressora_elgin = printer
+
+
 TWOPLACES = Decimal(10) ** -2
 FOURPLACES = Decimal(10) ** -4
 
@@ -72,7 +81,7 @@ class Sat(Thread):
         self.lock = Lock()
         self.satlock = Lock()
         self.status = {'status': 'connecting', 'messages': []}
-        self.printer = False
+        self.printer = impressora_elgin
         self.tipo_equipamento = tipo_equipamento
         self.device = self._get_device()
         self.assinatura = assinatura
@@ -299,7 +308,7 @@ class Sat(Thread):
                     numero_documento=resposta.numeroSessao,
                 )
 
-            # self._print_extrato_venda(resposta.arquivoCFeSAT)
+            self._print_extrato_venda(resposta.arquivoCFeSAT)
             return {
                 'xml': resposta.arquivoCFeSAT,
                 'numSessao': resposta.numeroSessao,
