@@ -257,7 +257,7 @@ class Sat(Thread):
         resposta_pagamento_validador = False
         if len(resposta_pagamento[0]) >= 7:
             self.id_pagamento = resposta_pagamento[0]
-            self.id_fila = json['id_fila'] or resposta_pagamento[1]
+            self.id_fila = json.get('id_fila') or resposta_pagamento[1]
             self.numero_identificador = resposta_pagamento[1]
 
             # Retorno do status do pagamento só é necessário em uma venda
@@ -266,8 +266,8 @@ class Sat(Thread):
             resposta_pagamento_validador = cliente.verificar_status_validador(
                 cnpjsh, self.id_fila
             )
-            if resposta_pagamento_validador:
-                raise (ErroRespostaMFEVerificarStatusValidador('Erro na verificação dos status do pagamento'))
+            # if resposta_pagamento_validador:
+            #     raise (ErroRespostaMFEVerificarStatusValidador('Erro na verificação dos status do pagamento'))
         else:
             raise(ErroRespostaMFEEnviarPagamento('Erro no envio do pagamento!'))
 
