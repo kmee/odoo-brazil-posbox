@@ -289,9 +289,10 @@ class Sat(Thread):
             BibliotecaMFE(json['configs_sat']['integrador_path']),
             chave_acesso_validador=json['configs_sat']['chave_acesso_validador'],
         )
+        pagamento = False
         if equipamento == 'mfe':
             pagamento = self._prepare_pagamento(json=json, cliente=cliente)
-        if pagamento: #todo: resposta fiscal
+        if pagamento or equipamento == 'sat': #todo: resposta fiscal
             dados = self.__prepare_send_cfe(json)
             resposta = self.device.enviar_dados_venda(dados)
             print resposta
