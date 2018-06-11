@@ -28,6 +28,8 @@ from satcfe import BibliotecaSAT
 from mfecfe.clientelocal import ClienteSATLocal as ClienteMFELocal
 from mfecfe import BibliotecaSAT as BibliotecaMFE
 from mfecfe.clientelocal import ClienteVfpeLocal
+from mfecfe.excecoes import ErroRespostaMFEEnviarPagamento
+from mfecfe.excecoes import ErroRespostaMFEVerificarStatusValidador
 
 
 from satextrato import ExtratoCFeCancelamento, ExtratoCFeVenda
@@ -60,10 +62,11 @@ class XPathMap(object):
 
 class Sat(Thread):
     def __init__(self, codigo_ativacao, sat_path, impressora, printer_params,
-                 assinatura, tipo_equipamento):
+                 assinatura, tipo_equipamento, integrador_path):
         Thread.__init__(self)
         self.codigo_ativacao = codigo_ativacao
         self.sat_path = sat_path
+        self.integrador_path = integrador_path
         self.impressora = impressora
         self.printer_params = printer_params
         self.lock = Lock()
@@ -73,6 +76,7 @@ class Sat(Thread):
         self.tipo_equipamento = tipo_equipamento
         self.device = self._get_device()
         self.assinatura = assinatura
+        self.mensagem = False
 
 
     def lockedstart(self):
@@ -112,7 +116,7 @@ class Sat(Thread):
             return None
         if self.tipo_equipamento == 'mfe':
             return ClienteMFELocal(
-                BibliotecaMFE('/home/atillasilva/Integrador'),
+                BibliotecaMFE(self.integrador_path),
                 codigo_ativacao=self.codigo_ativacao,
                 # chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D'
             )
@@ -239,8 +243,10 @@ class Sat(Thread):
         codigo_moeda = json['currency']['name']
         cupom_nfce = True
         cnpj = json['company']['cnpj']
+        chave_acesso = json['configs_sat']['chave_acesso_validador']
+        #'26359854-5698-1365-9856-965478231456' -> chave acesso para homologacao
 
-        resposta = cliente.enviar_pagamento('26359854-5698-1365-9856-965478231456', numero_caixa,
+        resposta = cliente.enviar_pagamento(chave_acesso, numero_caixa,
                                                                'TEF',
                                                                cnpj, icms_base, valor_total_venda,
                                                                multiplos_pagamentos, controle_antifraude, codigo_moeda,
@@ -251,7 +257,7 @@ class Sat(Thread):
         resposta_pagamento_validador = False
         if len(resposta_pagamento[0]) >= 7:
             self.id_pagamento = resposta_pagamento[0]
-            self.id_fila = '958860'
+            self.id_fila = json['id_fila'] or resposta_pagamento[1]
             self.numero_identificador = resposta_pagamento[1]
 
             # Retorno do status do pagamento só é necessário em uma venda
@@ -260,50 +266,48 @@ class Sat(Thread):
             resposta_pagamento_validador = cliente.verificar_status_validador(
                 cnpjsh, self.id_fila
             )
-            self.pagamento_valido = True
+            if resposta_pagamento_validador:
+                raise (ErroRespostaMFEVerificarStatusValidador('Erro na verificação dos status do pagamento'))
+        else:
+            raise(ErroRespostaMFEEnviarPagamento('Erro no envio do pagamento!'))
 
         return resposta_pagamento_validador
 
     def _send_cfe(self, json):
-        try:
-            equipamento = json['configs_sat']['tipo_equipamento']
-            cliente = ClienteVfpeLocal(
-                BibliotecaMFE('/home/atillasilva/Integrador'),
-                chave_acesso_validador='25CFE38D-3B92-46C0-91CA-CFF751A82D3D'
-            )
-            if equipamento == 'mfe':
-                pagamento = self._prepare_pagamento(json=json, cliente=cliente)
-            if True: #todo: resposta fiscal
-                dados = self.__prepare_send_cfe(json)
-                resposta = self.device.enviar_dados_venda(dados)
-                print resposta
-                if resposta.EEEEE == '06000' and equipamento == 'mfe':
-                    resposta_fiscal = cliente.resposta_fiscal(
-                        id_fila=resposta.id_fila,
-                        chave_acesso=resposta.chaveConsulta,
-                        nsu=pagamento.CodigoPagamento,
-                        numero_aprovacao=pagamento.CodigoAutorizacao,
-                        bandeira=pagamento.Tipo, # '1'
-                        adquirente=pagamento.DonoCartao,
-                        cnpj=json['company']['cnpj'], #'30146465000116'
-                        impressao_fiscal=dados._informacoes_adicionais.infCpl,
-                        numero_documento=resposta.numeroSessao,
-                    )
+        # try:
+        equipamento = json['configs_sat']['tipo_equipamento']
+        cliente = ClienteVfpeLocal(
+            BibliotecaMFE(json['configs_sat']['integrador_path']),
+            chave_acesso_validador=json['configs_sat']['chave_acesso_validador'],
+        )
+        if equipamento == 'mfe':
+            pagamento = self._prepare_pagamento(json=json, cliente=cliente)
+        if pagamento: #todo: resposta fiscal
+            dados = self.__prepare_send_cfe(json)
+            resposta = self.device.enviar_dados_venda(dados)
+            print resposta
+            if resposta.EEEEE == '06000' and equipamento == 'mfe':
+                resposta_fiscal = cliente.resposta_fiscal(
+                    id_fila=resposta.id_fila,
+                    chave_acesso=resposta.chaveConsulta,
+                    nsu=pagamento.CodigoPagamento,
+                    numero_aprovacao=pagamento.CodigoAutorizacao,
+                    bandeira=pagamento.Tipo, # '1'
+                    adquirente=pagamento.DonoCartao,
+                    cnpj=json['company']['cnpj'], #'30146465000116'
+                    impressao_fiscal=dados._informacoes_adicionais.infCpl,
+                    numero_documento=resposta.numeroSessao,
+                )
 
-                # self._print_extrato_venda(resposta.arquivoCFeSAT)
-                return {
-                    'xml': resposta.arquivoCFeSAT,
-                    'numSessao': resposta.numeroSessao,
-                    'chave_cfe': resposta.chaveConsulta,
-                }
-        except Exception as e:
-            if hasattr(e, 'resposta'):
-                return e.resposta.mensagem
-            elif hasattr(e, 'message'):
-                return e.message
-            else:
-                return "Erro ao validar os dados para o xml! " \
-                       "Contate o suporte técnico."
+            # self._print_extrato_venda(resposta.arquivoCFeSAT)
+            return {
+                'xml': resposta.arquivoCFeSAT,
+                'numSessao': resposta.numeroSessao,
+                'chave_cfe': resposta.chaveConsulta,
+            }
+        else:
+            return {'excessao': 'Erro não foi possível'}
+
 
     def __prepare_cancel_cfe(self, chCanc, cnpj):
         kwargs = {}
@@ -358,6 +362,12 @@ class Sat(Thread):
                     return self._send_cfe(json)
                 elif task == 'cancel':
                     return self._cancel_cfe(json)
+        except ErroRespostaMFEEnviarPagamento as ex:
+            _logger.error('MFE Error: {0}'.format(ex))
+            return {'excessao': ex.message}
+        except ErroRespostaMFEVerificarStatusValidador as ex:
+            _logger.error('MFE Error: {0}'.format(ex))
+            return {'excessao': ex.message}
         except ErroRespostaSATInvalida as ex:
             _logger.error('SAT Error: {0}'.format(ex))
             return {'excessao': ex}
