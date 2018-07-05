@@ -31,16 +31,17 @@ if [ ! -d "$ODOO_DIR" ]; then
 fi
 
 # Install Bematech SAT DLL
-if ! dpkg -l libbemasat &> /dev/null; then
-        _tmpdir=$(mktemp -d)
-        curl $LIBBEMASAT_ZIP_URL > $_tmpdir/libbemasat64.zip
-        unzip -d $_tmpdir $_tmpdir/libbemasat64.zip
-        sudo gdebi -n $_tmpdir/libbemasat_1.0.2.26-ubuntu14_amd64.deb
-        rm -f $_tmpdir/libbemasat_1.0.2.26-ubuntu14_amd64.deb $_tmpdir/libbemasat64.zip
-        rmdir $_tmpdir
-fi
+# Script em Ansible vai lidar com essa parte agora
+#if ! dpkg -l libbemasat &> /dev/null; then
+#        _tmpdir=$(mktemp -d)
+#        curl $LIBBEMASAT_ZIP_URL > $_tmpdir/libbemasat64.zip
+#        unzip -d $_tmpdir $_tmpdir/libbemasat64.zip
+#        sudo gdebi -n $_tmpdir/libbemasat_1.0.2.26-ubuntu14_amd64.deb
+#        rm -f $_tmpdir/libbemasat_1.0.2.26-ubuntu14_amd64.deb $_tmpdir/libbemasat64.zip
+#        rmdir $_tmpdir
+#fi
 
-sudo -H -u $ODOO_USER bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b udev-rules'
+sudo -H -u $ODOO_USER bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b hotfix/buildout_branch'
 sudo cp $ODOO_DIR/odoo-brazil-posbox/90-posbox.rules /etc/udev/rules.d/
 sudo cp $ODOO_DIR/odoo-brazil-posbox/odoo-supervisor.conf /etc/supervisor/conf.d/odoo.conf
 sudo -H -u $ODOO_USER bash -c 'cd /opt/odoo/odoo-brazil-posbox && bash init-buildout.sh'
