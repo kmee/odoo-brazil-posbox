@@ -19,7 +19,7 @@ from satcfe.excecoes import ErroRespostaSATInvalida
 from satcfe.excecoes import ExcecaoRespostaSAT
 
 cliente = ClienteSATLocal(
-    BibliotecaSAT('/usr/lib/libbemasat.so'),
+    BibliotecaSAT('/usr/lib/libsat.so'),
     codigo_ativacao='bema1234'
    )
 print cliente
@@ -28,11 +28,12 @@ print resposta.mensagem
 
 
 from escpos.serial import SerialSettings
-from escpos.impl.epson import TMT20
+from escpos.impl.elgin import ElginI9
 from satextrato import ExtratoCFeVenda
 
-conn = SerialSettings.as_from('/dev/ttyS0:115200,8,1,N').get_connection()
-impressora = TMT20(conn)
+
+conn = SerialSettings.as_from('/dev/usb/lp0').get_connection()
+impressora = ElginI9(conn)
 impressora.init()
 
 with open(r'test/pos_order_1.xml', 'r') as fp:
