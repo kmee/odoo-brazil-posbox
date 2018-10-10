@@ -308,7 +308,7 @@ class Sat(Thread):
             return {'excessao': ex}
 
     def _init_printer(self):
-
+        """
         from escpos.serial import SerialSettings
 
         if self.impressora == 'epson-tm-t20':
@@ -328,6 +328,10 @@ class Sat(Thread):
         conn = SerialSettings.as_from(
             self.printer_params).get_connection()
 
+        """
+        from escpos.ifusb import USBConnection
+	from escpos.impl.epson import TMT20 as Printer
+        conn = USBConnection.create("04b8:0e03,interface=0,ep_out=0x01,ep_in=0x82")
         printer = Printer(conn)
         printer.init()
         return printer
