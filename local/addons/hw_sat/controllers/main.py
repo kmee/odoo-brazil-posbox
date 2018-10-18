@@ -25,8 +25,10 @@ try:
     from satcfe.entidades import ProdutoServico
     from satcfe.entidades import Imposto
     from satcfe.entidades import ICMSSN102
-    from satcfe.entidades import PISSN
-    from satcfe.entidades import COFINSSN
+#    from satcfe.entidades import PISSN      #para cst 49
+    from satcfe.entidades import PISOutr
+#    from satcfe.entidades import COFINSSN #para cst 49
+    from satcfe.entidades import COFINSOutr
     from satcfe.entidades import MeioPagamento
     from satcfe.entidades import CFeVenda
     from satcfe.entidades import InformacoesAdicionais
@@ -160,9 +162,9 @@ class Sat(Thread):
                 ),
             imposto=Imposto(
                 vItem12741=estimated_taxes,
-                icms=ICMSSN102(Orig=item['origin'], CSOSN='500'),
-                pis=PISSN(CST='49'),
-                cofins=COFINSSN(CST='49'))
+                icms=ICMSSN102(Orig=item['origin'], CSOSN='102'),
+                pis=PISOutr(CST='99'),
+                cofins=COFINSOutr(CST='99'))
         )
         detalhe.validar()
         return detalhe, estimated_taxes
