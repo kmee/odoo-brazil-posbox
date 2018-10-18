@@ -163,8 +163,8 @@ class Sat(Thread):
             imposto=Imposto(
                 vItem12741=estimated_taxes,
                 icms=ICMSSN102(Orig=item['origin'], CSOSN='102'),
-                pis=PISOutr(CST='99'),
-                cofins=COFINSOutr(CST='99'))
+                pis=PISOutr(CST='99',vBC=Decimal(0.0), pPIS=Decimal(0.0)),
+                cofins=COFINSOutr(CST='99', vBC=Decimal(0.0), pCOFINS=Decimal(0.0)))
         )
         detalhe.validar()
         return detalhe, estimated_taxes
