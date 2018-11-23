@@ -41,7 +41,7 @@ fi
 #        rmdir $_tmpdir
 #fi
 
-sudo -H -u $ODOO_USER bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b hotfix/buildout_branch'
+sudo -H -u $ODOO_USER bash -c 'cd /opt/odoo && git clone https://github.com/kmee/odoo-brazil-posbox.git -b udev-rules'
 sudo cp $ODOO_DIR/odoo-brazil-posbox/90-posbox.rules /etc/udev/rules.d/
 sudo cp $ODOO_DIR/odoo-brazil-posbox/odoo-supervisor.conf /etc/supervisor/conf.d/odoo.conf
 sudo -H -u $ODOO_USER bash -c 'cd /opt/odoo/odoo-brazil-posbox && bash init-buildout.sh'
