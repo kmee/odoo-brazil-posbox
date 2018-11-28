@@ -4,7 +4,13 @@ sudo locale-gen pt_BR.UTF-8
 
 sudo apt-get update
 sudo apt-get install software-properties-common
-sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
+### Check if Distro is ubuntu
+DISTRO=`lsb_release -si`
+if [ DISTRO == "Ubuntu" ]; then
+        sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
+else
+        echo "$DISTRO nao eh ubuntu" # Vamos adicionar as variacoes no futuro
+fi
 
 sudo apt-get update
 
