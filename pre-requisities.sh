@@ -5,19 +5,32 @@ sudo locale-gen pt_BR.UTF-8
 sudo apt-get update
 sudo apt-get install software-properties-common
 ### Check if Distro is ubuntu
-DISTRO=`lsb_release -si`
-if [ DISTRO == "Ubuntu" ]; then
+#!/bin/bash
+DISTRO_NAME=`lsb_release -si`
+DISTRO_RELEASE=`lsb_release -sc`
+if [ $DISTRO_NAME == "Ubuntu" ]; then
         sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
-else
-        echo "$DISTRO nao eh ubuntu" # Vamos adicionar as variacoes no futuro
+elif [ $DISTRO_NAME == "LinuxMint" ]; then
+        if [ $DISTRO_RELEASE == "tara" ]; then
+                sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu bionic universe"
+        fi
 fi
-
+### Update repository
 sudo apt-get update
 
-sudo apt-get install -y python-virtualenv expect-dev python-lxml \
-  libxml2-dev libxslt-dev gcc python2.7-dev libevent-dev libsasl2-dev \
-  libldap2-dev libpq-dev libpng12-dev libjpeg-dev sudo supervisor git \
-  curl wget postgresql gdebi-core
+if [ $DISTRO_RELEASE == "tara" ] || [ $DISTRO_RELEASE == "bionic" ]; then
+        ### install packages with 18.04/bionic repository (libpng-dev)
+        sudo apt-get install -y python-virtualenv expect-dev python-lxml \
+          libxml2-dev libxslt-dev gcc python2.7-dev libevent-dev libsasl2-dev \
+          libldap2-dev libpq-dev libpng-dev libjpeg-dev sudo supervisor git \
+          curl wget postgresql gdebi-core
+else
+        ### install packages with 16.04/Xenial or older repository (libpng12-dev)
+        sudo apt-get install -y python-virtualenv expect-dev python-lxml \
+          libxml2-dev libxslt-dev gcc python2.7-dev libevent-dev libsasl2-dev \
+          libldap2-dev libpq-dev libpng12-dev libjpeg-dev sudo supervisor git \
+          curl wget postgresql gdebi-core
+fi
 
 ODOO_USER=odoo
 ODOO_DIR=/opt/odoo
