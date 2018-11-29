@@ -29,6 +29,7 @@ try:
     from satcfe.entidades import COFINSSN
     from satcfe.entidades import MeioPagamento
     from satcfe.entidades import CFeVenda
+    from satcfe.entidades import InformacoesAdicionais
     from satcfe.entidades import DescAcrEntr
     from satcfe.entidades import CFeCancelamento
     from satcfe.excecoes import ErroRespostaSATInvalida
@@ -48,6 +49,20 @@ FOURPLACES = Decimal(10) ** -4
 def punctuation_rm(string_value):
     tmp_value = string_value.translate(None, string.punctuation)
     return tmp_value
+
+
+class XPathMap(object):
+
+    def __init__(self, root):
+        self.root = root
+
+    def __getitem__(self, key, default=None):
+        nodelist = self.root.findtext(key)
+        if not nodelist:
+            return '*'
+        if len(nodelist) > 1:
+            return nodelist
+        return nodelist[0]
 
 
 class Sat(Thread):
@@ -192,11 +207,17 @@ class Sat(Thread):
                 indRatISSQN='N')
         emitente.validar()
 
+        informacoes_adicionais = json.get('informacoes_adicionais')
+        if informacoes_adicionais is not None:
+            kwargs['informacoes_adicionais'] = InformacoesAdicionais(
+                # informacoes_adicionais pode ser um inteiro ou unicode:
+                infCpl=u"%s" % (informacoes_adicionais,),
+            )
 
         return CFeVenda(
             CNPJ=punctuation_rm(json['company']['cnpj_software_house']),
             signAC=self.assinatura,
-            numeroCaixa=2,
+            numeroCaixa=json['configs_sat']['numero_caixa'],
             emitente=emitente,
             detalhamentos=detalhamentos,
             pagamentos=pagamentos,
@@ -251,6 +272,7 @@ class Sat(Thread):
                 'chave_cfe': resposta.chaveConsulta,
             }
         except Exception as e:
+            _logger.error('_cancel_cfe', exc_info=1)
             if hasattr(e, 'resposta'):
                 return e.resposta.mensagem
             elif hasattr(e, 'message'):
@@ -318,6 +340,13 @@ class Sat(Thread):
             StringIO.StringIO(base64.b64decode(xml)),
             self.printer
             )
+        anotacoes_corpo = '\n'.join([
+            '{xml[infCFe/infAdic/infCpl]}',
+            'Venda no.: {xml[infCFe/ide/nserieSAT]} / {xml[infCFe/ide/nCFe]}',
+        ]).format(
+            xml=XPathMap(extrato.root),
+        ).splitlines()
+        extrato.anotacoes_corpo.extend(anotacoes_corpo)
         extrato.imprimir()
         return True
 
