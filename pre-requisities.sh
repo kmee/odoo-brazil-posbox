@@ -3,7 +3,7 @@ set -e -x
 sudo locale-gen pt_BR.UTF-8
 
 sudo apt-get update
-sudo apt-get install software-properties-common
+sudo apt-get -y install software-properties-common
 ### Check if Distro is ubuntu
 #!/bin/bash
 DISTRO_NAME=`lsb_release -si`
