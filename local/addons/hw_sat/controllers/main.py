@@ -25,6 +25,7 @@ try:
     from satcfe.entidades import ProdutoServico
     from satcfe.entidades import Imposto
     from satcfe.entidades import ICMS00
+    from satcfe.entidades import ICMSSN102
     from satcfe.entidades import PISSN
     from satcfe.entidades import COFINSSN
     from satcfe.entidades import MeioPagamento
@@ -160,7 +161,8 @@ class Sat(Thread):
                 ),
             imposto=Imposto(
                 vItem12741=estimated_taxes,
-                icms=ICMS00(Orig=item['origin'], CST='00', pICMS=Decimal('18.00')),
+#                icms=ICMS00(Orig=item['origin'], CST='00', pICMS=Decimal('18.00')),
+                icms=ICMSSN102(Orig=item['origin'], CST='102'),
                 pis=PISSN(CST='49'),
                 cofins=COFINSSN(CST='49'))
         )
