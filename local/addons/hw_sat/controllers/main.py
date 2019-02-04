@@ -202,7 +202,10 @@ class Sat(Thread):
         kwargs = {}
         if json['client']:
             # TODO: Verificar se tamanho == 14: cnpj
-            kwargs['destinatario'] = Destinatario(CPF=json['client'])
+            if len(json['client']) == 14:
+                kwargs['destinatario'] = Destinatario(CNPJ=json['client'])
+            else:
+                kwargs['destinatario'] = Destinatario(CPF=json['client'])
         emitente = Emitente(
                 CNPJ=punctuation_rm(json['company']['cnpj']),
                 IE=punctuation_rm(json['company']['ie']),
