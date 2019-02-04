@@ -162,7 +162,7 @@ class Sat(Thread):
             imposto=Imposto(
                 vItem12741=estimated_taxes,
 #                icms=ICMS00(Orig=item['origin'], CST='00', pICMS=Decimal('18.00')),
-                icms=ICMSSN102(Orig=item['origin'], CST='102'),
+                icms=ICMSSN102(Orig=item['origin'], CSOSN='102'),
                 pis=PISSN(CST='49'),
                 cofins=COFINSSN(CST='49'))
         )
