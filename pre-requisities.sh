@@ -23,7 +23,7 @@ if [ $DISTRO_RELEASE == "tara" ] || [ $DISTRO_RELEASE == "bionic" ]; then
         sudo apt-get install -y python-virtualenv expect-dev python-lxml \
           libxml2-dev libxslt-dev gcc python2.7-dev libevent-dev libsasl2-dev \
           libldap2-dev libpq-dev libpng-dev libjpeg-dev sudo supervisor git \
-          curl wget postgresql gdebi-core
+          curl wget postgresql gdebi-core libffi6 libffi-dev
 else
         ### install packages with 16.04/Xenial or older repository (libpng12-dev)
         sudo apt-get install -y python-virtualenv expect-dev python-lxml \
