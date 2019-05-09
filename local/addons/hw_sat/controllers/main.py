@@ -314,24 +314,26 @@ class Sat(Thread):
 
     def _init_printer(self):
 
-        from escpos.serial import SerialSettings
 
         if self.impressora == 'epson-tm-t20':
+            #from escpos.serial import SerialSettings as Connection
+	    from escpos.file import FileConnection as Connection
             _logger.info(u'SAT Impressao: Epson TM-T20')
             from escpos.impl.epson import TMT20 as Printer
         elif self.impressora == 'bematech-mp4200th':
+            from escpos.serial import SerialSettings as Connection
             _logger.info(u'SAT Impressao: Bematech MP4200TH')
             from escpos.impl.bematech import MP4200TH as Printer
         elif self.impressora == 'daruma-dr700':
             _logger.info(u'SAT Impressao: Daruma Dr700')
             from escpos.impl.daruma import DR700 as Printer
         elif self.impressora == 'elgin-i9':
+	    from escpos.file import FileConnection as Connection
             _logger.info(u'SAT Impressao: Elgin I9')
             from escpos.impl.elgin import ElginI9 as Printer
         else:
             self.printer = False
-        conn = SerialSettings.as_from(
-            self.printer_params).get_connection()
+        conn = Connection(self.printer_params)
 
         printer = Printer(conn)
         printer.init()
