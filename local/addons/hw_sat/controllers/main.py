@@ -300,6 +300,8 @@ class Sat(Thread):
                     return self._reprint_cfe(json)
                 elif task == 'send':
                     return self._send_cfe(json)
+                elif task == 'print_escpos':
+                    return self._print_escpos(json)
                 elif task == 'cancel':
                     return self._cancel_cfe(json)
         except ErroRespostaSATInvalida as ex:
@@ -339,6 +341,11 @@ class Sat(Thread):
         printer.init()
         return printer
 
+    def _print_escpos(self, json):
+        if not self.printer:
+            print "Verificar LOG da Impressora"
+            return False
+        self.printer.text(json)
 
     def _print_extrato_venda(self, xml):
         if not self.printer:
@@ -412,3 +419,7 @@ class SatDriver(hw_proxy.Proxy):
     @http.route('/hw_proxy/reprint_cfe/', type='json', auth='none', cors='*')
     def reprint_cfe(self, json):
         return hw_proxy.drivers['satcfe'].action_call_sat('reprint', json)
+
+    @http.route('/hw_proxy/imprimir_escpos/', type='json', auth='none', cors='*')
+    def imprimir_escpos(self, json):
+        return hw_proxy.drivers['satcfe'].action_call_sat('print_escpos', json)
