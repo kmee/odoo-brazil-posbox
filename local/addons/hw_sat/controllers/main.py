@@ -327,6 +327,7 @@ class Sat(Thread):
             _logger.info(u'SAT Impressao: Bematech MP4200TH')
             from escpos.impl.bematech import MP4200TH as Printer
         elif self.impressora == 'daruma-dr700':
+	    from escpos.file import FileConnection as Connection
             _logger.info(u'SAT Impressao: Daruma Dr700')
             from escpos.impl.daruma import DR700 as Printer
         elif self.impressora == 'elgin-i9':
