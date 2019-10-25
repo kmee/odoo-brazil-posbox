@@ -1,0 +1,19 @@
+version: '2.4'
+services:
+  posbox:
+    build:
+      context: .
+      args:
+        SERVER_WIDE_MODULES: "hw_proxy,hw_escpos,hw_telium_payment_terminal"
+    ports:
+      - "8069:8069"
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+    tty: true
+    privileged: true
+
+  db:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
