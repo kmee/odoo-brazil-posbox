@@ -3,10 +3,14 @@ Docker PosBox image
 
 # Usage
 
-Configure the docker-compose.yml `SERVER_WIDE_MODULES` arg according to your requirements.
+1. Clone this repository `git clone https://github.com/AwesomeFoodCoops/docker-posbox` && `cd docker-posbox`
 
-`$ docker-compose build --pull`
+2. Edit the docker-compose.yml `SERVER_WIDE_MODULES` arg according to your requirements.
 
-`$ docker-compose up`
+3. Run
+```
+$ docker-compose build --pull
+$ docker-compose up
+```
 
-Test to access: `https://localhost:8069/hw_proxy/status`. You should see the hw proxy status page.
+4. Try to access: `https://localhost:8069/hw_proxy/status`. You should see the hw proxy status page.
