@@ -4,16 +4,21 @@ services:
     build:
       context: .
       args:
+        ODOO_VERSION: "9.0"
         SERVER_WIDE_MODULES: "hw_proxy,hw_escpos,hw_telium_payment_terminal"
+    restart: always
     ports:
       - "8069:8069"
     volumes:
       - /dev/bus/usb:/dev/bus/usb
     tty: true
     privileged: true
+    depends_on:
+      db
 
   db:
     image: postgres:9.5
+    restart: always
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo
