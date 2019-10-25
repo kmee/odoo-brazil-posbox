@@ -14,7 +14,7 @@ services:
     tty: true
     privileged: true
     depends_on:
-      db
+      - db
 
   db:
     image: postgres:9.5

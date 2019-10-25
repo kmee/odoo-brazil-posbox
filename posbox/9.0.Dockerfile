@@ -69,7 +69,7 @@ RUN pip install pyusb==1.0b1 \
 RUN apt-get install -y libyaml-dev libpython2.7-dev \
 	&& pip install pyyaml \
 	    pycountry \
-	    serial
+	    pyserial
 
 
 RUN useradd --create-home --shell /bin/bash odoo \
