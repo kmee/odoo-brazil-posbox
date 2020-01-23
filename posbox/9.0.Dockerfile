@@ -116,5 +116,5 @@ USER odoo
 VOLUME /var/log/odoo
 EXPOSE 8069
 
-ONBUILD ADD odoo.conf /home/odoo/odoo/odoo.conf
+ONBUILD COPY odoo.conf /home/odoo/odoo/odoo.conf
 ONBUILD CMD ["/home/odoo/odoo/odoo.py", "-c", "/home/odoo/odoo/odoo.conf"]
