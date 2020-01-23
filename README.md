@@ -9,8 +9,8 @@ Docker PosBox image
 
 3. Run
 ```
-$ docker-compose build --pull
-$ docker-compose up
+$ sudo docker-compose build --pull
+$ sudo docker-compose up
 ```
 
 4. Try to access: `https://localhost:8069/hw_proxy/status`. You should see the hw proxy status page.
