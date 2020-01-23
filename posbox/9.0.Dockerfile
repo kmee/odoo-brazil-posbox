@@ -109,31 +109,11 @@ RUN mkdir -p /var/run/odoo
 RUN touch /var/run/odoo/odoo.pid && chown odoo:odoo -R /var/run/odoo
 RUN rm -rf "$ODOO_SRC_PATH"
 
-#WORKDIR "/home/odoo/odoo"
-#USER odoo
-#RUN set -x; \
-#	git config core.sparsecheckout true \
-#	&& echo -e "addons/web\naddons/web_kanban\naddons/hw_*\naddons/point_of_sale/tools/posbox/configuration\nopenerp/\nodoo.py" > sparse-checkout > /dev/null \
-#	&& git read-tree -mu HEAD
-
 WORKDIR "$ODOO_DEST"
 USER odoo
 VOLUME /var/log/odoo
 EXPOSE 8069
 
-ONBUILD ARG DB_HOST="db"
-ONBUILD ARG DB_USER="odoo"
-ONBUILD ARG DB_PASS="odoo"
-ONBUILD ARG SERVER_WIDE_MODULES="hw_proxy,hw_escpos"
+ONBUILD COPY odoo.conf $ODOO_DEST/*
 
-ONBUILD ENV DB_HOST="$DB_HOST"
-ONBUILD ENV DB_USER="$DB_USER"
-ONBUILD ENV DB_PASS="$DB_PASS"
-ONBUILD ENV SERVER_WIDE_MODULES="$SERVER_WIDE_MODULES"
-
-ONBUILD RUN echo "db_host = db" >> $ODOO_DEST/addons/point_of_sale/tools/posbox/configuration/odoo.conf \
- && echo "db_user = odoo" >> $ODOO_DEST/addons/point_of_sale/tools/posbox/configuration/odoo.conf \
- && echo "db_password = odoo" >> $ODOO_DEST/addons/point_of_sale/tools/posbox/configuration/odoo.conf \
- && echo "server_wide_modules = ${SERVER_WIDE_MODULES}" >> $ODOO_DEST/addons/point_of_sale/tools/posbox/configuration/odoo.conf
-
-ONBUILD CMD ["/home/odoo/odoo/odoo.py", "-c", "/home/odoo/odoo/addons/point_of_sale/tools/posbox/configuration/odoo.conf"]
+ONBUILD CMD ["/home/odoo/odoo/odoo.py", "-c", "/home/odoo/odoo/odoo.conf"]

@@ -5,7 +5,6 @@ services:
       context: .
       args:
         ODOO_VERSION: "9.0"
-        SERVER_WIDE_MODULES: "hw_proxy,hw_escpos,hw_telium_payment_terminal"
     restart: unless-stopped
     ports:
       - "8069:8069"
