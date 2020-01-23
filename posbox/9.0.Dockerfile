@@ -60,16 +60,18 @@ RUN set -x; \
 	    console-data \
 	    gcc \
 	    cron \
-	    usbutils
+	    usbutils \
+	    libyaml-dev \
+	    libpython2.7-dev
 
-RUN pip install pyusb==1.0b1 \
+RUN pip install \
+		pyusb==1.0b1 \
 	    qrcode==4.0.1 \
-	    evdev
-
-RUN apt-get install -y libyaml-dev libpython2.7-dev \
-	&& pip install pyyaml \
+	    evdev \
+		pyyaml \
 	    pycountry \
-	    pyserial
+	    pyserial \
+	    pyTeliumManager
 
 
 RUN useradd --create-home --shell /bin/bash odoo \
