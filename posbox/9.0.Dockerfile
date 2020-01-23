@@ -10,74 +10,73 @@ ENV REPOSITORY_BRANCH="9.0"
 RUN set -x; \
         apt-get update \
         && apt-get install -y --no-install-recommends \
-	    sudo \
-	    adduser \
-	    apache2 \
-	    postgresql-client \
-	    python python-dateutil \
-	    python-decorator \
-	    python-docutils \
-	    python-feedparser \
-	    python-imaging \
-	    python-jinja2 \
-	    python-ldap \
-	    python-libxslt1 \
-	    python-lxml \
-	    python-mako \
-	    python-mock \
-	    python-openid \
-	    python-passlib \
-	    python-psutil \
-	    python-psycopg2 \
-	    python-pybabel \
-	    python-pychart \
-	    python-pydot \
-	    python-pyparsing \
-	    python-pypdf \
-	    python-reportlab \
-	    python-requests \
-	    python-simplejson \
-	    python-tz python-unittest2 \
-	    python-vatnumber \
-	    python-vobject \
-	    python-werkzeug \
-	    python-xlwt \
-	    python-yaml \
-	    python-gevent \
-	    python-serial \
-	    python-pip \
-	    python-dev \
-	    net-tools \
-	    vim \
-	    mc \
-	    mg \
-	    screen \
-	    iw \
-	    hostapd \
-	    isc-dhcp-server \
-	    git \
-	    rsync \
-	    console-data \
-	    gcc \
-	    cron \
-	    usbutils \
-	    libyaml-dev \
-	    libpython2.7-dev
+        sudo \
+        adduser \
+        apache2 \
+        postgresql-client \
+        python python-dateutil \
+        python-decorator \
+        python-docutils \
+        python-feedparser \
+        python-imaging \
+        python-jinja2 \
+        python-ldap \
+        python-libxslt1 \
+        python-lxml \
+        python-mako \
+        python-mock \
+        python-openid \
+        python-passlib \
+        python-psutil \
+        python-psycopg2 \
+        python-pybabel \
+        python-pychart \
+        python-pydot \
+        python-pyparsing \
+        python-pypdf \
+        python-reportlab \
+        python-requests \
+        python-simplejson \
+        python-tz python-unittest2 \
+        python-vatnumber \
+        python-vobject \
+        python-werkzeug \
+        python-xlwt \
+        python-yaml \
+        python-gevent \
+        python-pip \
+        python-dev \
+        net-tools \
+        vim \
+        mc \
+        mg \
+        screen \
+        iw \
+        hostapd \
+        isc-dhcp-server \
+        git \
+        rsync \
+        console-data \
+        gcc \
+        cron \
+        usbutils \
+        libyaml-dev \
+        libpython2.7-dev
 
-RUN pip install \
-            pyusb==1.0b1 \
-	    qrcode==4.0.1 \
-	    evdev \
-	    pyyaml \
-	    pycountry \
-	    pyserial \
-	    pyTeliumManager
+RUN pip install --upgrade \
+        pyusb==1.0b1 \
+        qrcode==4.0.1 \
+        evdev \
+        pyyaml \
+        pycountry \
+        pyserial \
+        git+https://github.com/Ousret/pyTeliumManager.git@python-2.7
 
 
 RUN useradd --create-home --shell /bin/bash odoo \
-	&& groupadd usbusers \
-	&& usermod -a -G usbusers odoo \
-	&& usermod -a -G lp odoo
+    && groupadd usbusers \
+    && usermod -a -G usbusers odoo \
+    && usermod -a -G lp odoo
 
 RUN echo '* * * * * rm /var/run/odoo/sessions/*' | crontab -
 
@@ -119,3 +118,4 @@ EXPOSE 8069
 # TODO: Fix this COPY is not working. We do it again on local Dockerfile
 ONBUILD COPY odoo.conf /home/odoo/odoo/odoo.conf
 ONBUILD CMD ["/home/odoo/odoo/odoo.py", "-c", "/home/odoo/odoo/odoo.conf"]
+ONBUILD USER root
