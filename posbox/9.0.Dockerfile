@@ -65,10 +65,10 @@ RUN set -x; \
 	    libpython2.7-dev
 
 RUN pip install \
-		pyusb==1.0b1 \
+            pyusb==1.0b1 \
 	    qrcode==4.0.1 \
 	    evdev \
-		pyyaml \
+	    pyyaml \
 	    pycountry \
 	    pyserial \
 	    pyTeliumManager
@@ -116,5 +116,6 @@ USER odoo
 VOLUME /var/log/odoo
 EXPOSE 8069
 
+# TODO: Fix this COPY is not working. We do it again on local Dockerfile
 ONBUILD COPY odoo.conf /home/odoo/odoo/odoo.conf
 ONBUILD CMD ["/home/odoo/odoo/odoo.py", "-c", "/home/odoo/odoo/odoo.conf"]
