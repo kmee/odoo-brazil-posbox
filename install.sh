@@ -6,6 +6,7 @@ sudo apt install -y docker docker-compose
 sudo groupadd docker
 sudo gpasswd -a $USER docker
 sudo service docker restart
+sudo systemctl enable docker
 
 echo "Installing docker-posbox"
 sudo mkdir -p /posbox && chown -R $USER:$USER /posbox
