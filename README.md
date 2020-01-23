@@ -13,4 +13,4 @@ $ sudo docker-compose build --pull
 $ sudo docker-compose up
 ```
 
-4. Try to access: `https://localhost:8069/hw_proxy/status`. You should see the hw proxy status page.
+4. Try to access: `http://localhost:8069/hw_proxy/status`. You should see the hw proxy status page.
