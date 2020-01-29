@@ -1,5 +1,6 @@
 # docker-posbox
-Docker PosBox image
+
+Docker PosBox image.
 
 # Usage
 
@@ -23,3 +24,7 @@ curl -fsSL https://raw.githubusercontent.com/AwesomeFoodCoops/docker-posbox/mast
 ```
 
 This will update packages, install docker, and install the docker-posbox in `/posbox/docker-posbox`
+
+# Known Issues
+
+- Mozilla Firefox gives MixedContent error, but Google Chrome works fine.
