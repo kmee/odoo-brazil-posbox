@@ -21,3 +21,5 @@ $ sudo docker-compose up
 curl -fsSL https://raw.githubusercontent.com/AwesomeFoodCoops/docker-posbox/master/install.sh -o install-posbox.sh && sh install-posbox.sh
 
 ```
+
+This will update packages, install docker, and install the docker-posbox in `/posbox/docker-posbox`
