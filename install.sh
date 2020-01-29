@@ -18,4 +18,5 @@ cd /posbox/docker-posbox
 
 echo "Building image"
 sudo docker-compose build --pull
+sudo docker-compose create
 sudo docker-compose start
