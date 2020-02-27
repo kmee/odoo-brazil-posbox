@@ -39,11 +39,9 @@ LIBBEMASAT_ZIP_URL="http://bematechpartners.com.br/wp01/?wpdmpro=libbemasat-1-0-
 if id -u $ODOO_USER &> /dev/null; then
         echo "Usuario existe:" $ODOO_USER
 else
-        sudo adduser --system --shell=/bin/bash --home=$ODOO_DIR --group $ODOO_USER
         sudo adduser odoo dialout
-        sudo -u postgres createuser --createdb --no-createrole --superuser $ODOO_USER
-        sudo -u postgres createdb $ODOO_USER
-fi
+        sudo -u postgres createuser --createdb --no-createrole --superuser odoo
+        sudo -u postgres createdb odoo
 if [ ! -d "$ODOO_DIR" ]; then
         sudo mkdir -p $ODOO_DIR
         sudo chown $ODOO_USER:$ODOO_USER $ODOO_DIR
