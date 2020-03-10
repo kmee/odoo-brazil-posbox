@@ -74,7 +74,7 @@ It might be possible to use Firefox, with some configuration.
 
 # Contributors
 
-* Iván Todorovich <ivan.todorovich@druidoo.io> (https://www.druidoo.io)
+* Iván Todorovich (https://www.druidoo.io)
 
 # Maintainer
 
