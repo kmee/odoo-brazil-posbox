@@ -69,7 +69,7 @@ It's possible to edit the `odoo.conf` file.
 
 This file is copied into the container when running `docker-compose build`.
 
-### Known Issues
+## Known Issues
 
 - Mozilla Firefox gives MixedContent error, but Google Chrome works fine out of the box.
 It might be possible to use Firefox, with some configuration.
