@@ -1,8 +1,29 @@
 # docker-posbox
 
-Docker PosBox image.
+Docker PosBox image for posbox-less deployment.
+This image is prepared for [AwesomeFoodCoops](https://github.com/AwesomeFoodCoops/odoo-production) PoS
 
-# Usage
+# Infrastructure
+
+.. image:: ../readme/posboxless_setup.png
+   :alt: PosboxLess Setup
+   :target: https://www.odoo.com/documentation/user/11.0/point_of_sale/overview/setup.html
+
+If you are running your Point of Sale on a Debian-based Linux distribution,
+you do not need the POSBox as you can run its software locally.
+For this purpose, you can use this dockerized version.
+
+# Install
+
+This will update packages, install docker, and install the docker-posbox
+in `/posbox/docker-posbox`
+
+```
+curl -fsSL https://raw.githubusercontent.com/AwesomeFoodCoops/docker-posbox/master/install.sh -o install-posbox.sh && sh install-posbox.sh
+
+```
+
+# Manual Install (Advanced)
 
 1. Clone this repository `git clone https://github.com/AwesomeFoodCoops/docker-posbox` && `cd docker-posbox`
 
@@ -10,21 +31,42 @@ Docker PosBox image.
 
 3. Run
 ```
-$ sudo docker-compose build --pull
-$ sudo docker-compose up
+$ docker-compose build --pull
+$ docker-compose up -d
 ```
 
 4. Try to access: `http://localhost:8069/hw_proxy/status`. You should see the hw proxy status page.
 
-# Optional Automated Install
+# Upgrading to new versions
 
 ```
-curl -fsSL https://raw.githubusercontent.com/AwesomeFoodCoops/docker-posbox/master/install.sh -o install-posbox.sh && sh install-posbox.sh
-
+$ cd /posbox/docker-posbox
+$ docker-compose down
+$ docker-compose build --pull
+$ docker-compose up -d
 ```
 
-This will update packages, install docker, and install the docker-posbox in `/posbox/docker-posbox`
+# Checking logs
+
+
+Last 100 lines:
+
+```
+$ docker-compose --tail 100
+```
+
+Live logs:
+
+```
+$ docker-compose --tail 100 -f
+```
+
+# Custom odoo.conf
+
+It's possible to edit the `odoo.conf` file.
+This file is copied into the container when running `docker-compose build`.
 
 # Known Issues
 
-- Mozilla Firefox gives MixedContent error, but Google Chrome works fine.
+- Mozilla Firefox gives MixedContent error, but Google Chrome works fine out of the box.
+It might be possible to use Firefox, with some configuration.
