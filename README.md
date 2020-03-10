@@ -48,6 +48,9 @@ $ docker-compose up -d
 
 ## Usage
 
+`docker-compose` commands must be ran on the `/posbox/docker-posbox` path,
+where the `docker-compose.yml` file is located.
+
 ### Checking logs
 
 
@@ -68,6 +71,13 @@ $ docker-compose --tail 100 -f
 It's possible to edit the `odoo.conf` file.
 
 This file is copied into the container when running `docker-compose build`.
+
+### Restarting posbox container
+
+```
+$ docker-compose down
+$ docker-compose up -d
+```
 
 ## Known Issues
 
