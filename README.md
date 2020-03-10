@@ -1,4 +1,4 @@
-# docker-posbox
+# Dockerized Posbox
 
 Docker PosBox image for posbox-less deployment.
 
@@ -71,3 +71,15 @@ This file is copied into the container when running `docker-compose build`.
 
 - Mozilla Firefox gives MixedContent error, but Google Chrome works fine out of the box.
 It might be possible to use Firefox, with some configuration.
+
+# Contributors
+
+* Iván Todorovich <ivan.todorovich@druidoo.io> (https://www.druidoo.io)
+
+# Maintainer
+
+<img src="https://www.druidoo.io/web/image/1136/druidoo14-09.png" 
+alt="Druidoo" width="200"/>
+
+This repository is maintained by Druidoo.
+
