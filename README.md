@@ -4,7 +4,7 @@ Docker PosBox image for posbox-less deployment.
 
 This image is prepared for [AwesomeFoodCoops](https://github.com/AwesomeFoodCoops/odoo-production) PoS
 
-### Infrastructure
+## Infrastructure
 
 ![](https://raw.githubusercontent.com/AwesomeFoodCoops/docker-posbox/master/readme/posboxless_setup.png)
 
@@ -13,7 +13,7 @@ you do not need the POSBox as you can run its software locally.
 
 For this purpose, you can use this dockerized version.
 
-### Install
+## Install
 
 This will update packages, install docker, and install the docker-posbox
 in `/posbox/docker-posbox`
@@ -45,6 +45,8 @@ $ docker-compose down
 $ docker-compose build --pull
 $ docker-compose up -d
 ```
+
+## Usage
 
 ### Checking logs
 
