@@ -1,16 +1,16 @@
 # docker-posbox
 
 Docker PosBox image for posbox-less deployment.
+
 This image is prepared for [AwesomeFoodCoops](https://github.com/AwesomeFoodCoops/odoo-production) PoS
 
 # Infrastructure
 
-.. image:: ../readme/posboxless_setup.png
-   :alt: PosboxLess Setup
-   :target: https://www.odoo.com/documentation/user/11.0/point_of_sale/overview/setup.html
+![](https://raw.githubusercontent.com/AwesomeFoodCoops/docker-posbox/master/readme/posboxless_setup.png)
 
 If you are running your Point of Sale on a Debian-based Linux distribution,
 you do not need the POSBox as you can run its software locally.
+
 For this purpose, you can use this dockerized version.
 
 # Install
@@ -27,7 +27,7 @@ curl -fsSL https://raw.githubusercontent.com/AwesomeFoodCoops/docker-posbox/mast
 
 1. Clone this repository `git clone https://github.com/AwesomeFoodCoops/docker-posbox` && `cd docker-posbox`
 
-2. Edit the docker-compose.yml `SERVER_WIDE_MODULES` arg according to your requirements.
+2. Edit the `odoo.conf` according to your requirements.
 
 3. Run
 ```
@@ -35,7 +35,7 @@ $ docker-compose build --pull
 $ docker-compose up -d
 ```
 
-4. Try to access: `http://localhost:8069/hw_proxy/status`. You should see the hw proxy status page.
+4. Try to access: `http://localhost:8069/hw_proxy/status`.
 
 # Upgrading to new versions
 
@@ -64,6 +64,7 @@ $ docker-compose --tail 100 -f
 # Custom odoo.conf
 
 It's possible to edit the `odoo.conf` file.
+
 This file is copied into the container when running `docker-compose build`.
 
 # Known Issues
