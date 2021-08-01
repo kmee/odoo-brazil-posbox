@@ -4,7 +4,7 @@ services:
     build:
       context: .
       args:
-        ODOO_VERSION: "9.0"
+        ODOO_VERSION: "12.0"
     restart: unless-stopped
     ports:
       - "8069:8069"
@@ -16,7 +16,7 @@ services:
       - db
 
   db:
-    image: postgres:9.5
+    image: postgres:13.3-alpine3.14
     restart: unless-stopped
     environment:
       POSTGRES_USER: odoo
