@@ -2,7 +2,7 @@
 
 echo "Upgrading packages"
 sudo apt update && sudo apt upgrade -y
-
+ 
 echo "Installing docker.."
 sudo apt install -y git docker docker-compose
 sudo groupadd docker
@@ -14,7 +14,7 @@ echo "Installing docker-posbox"
 sudo mkdir -p /posbox
 sudo chown -R $USER:$USER /posbox
 
-git clone https://github.com/kmee/odoo-brazil-posbox.git --branch=12.0 /posbox/docker-posbox
+git clone --branch=12.0 https://github.com/kmee/odoo-brazil-posbox.git /posbox/docker-posbox
 cd /posbox/docker-posbox
 
 echo "Building image"
